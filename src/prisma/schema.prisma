@@ -1,0 +1,79 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 商户（租户）模型
+model Merchant {
+  id        Int        @id @default(autoincrement())
+  name      String // 商户名称
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  menuItems MenuItem[]
+  tables    Table[]
+  orders    Order[]
+}
+
+// 餐桌模型
+model Table {
+  id         Int      @id @default(autoincrement())
+  name       String // 桌号，如 "A1", "吧台座-3"
+  merchantId Int
+  merchant   Merchant @relation(fields: [merchantId], references: [id])
+  orders     Order[]
+
+  @@unique([merchantId, name]) // 同一个商户下的桌号不能重复
+}
+
+// 菜单项模型
+model MenuItem {
+  id          Int         @id @default(autoincrement())
+  name        String // 菜品名称
+  price       Float // 价格
+  description String?
+  isAvailable Boolean     @default(true) // 是否在售
+  merchantId  Int
+  merchant    Merchant    @relation(fields: [merchantId], references: [id])
+  orderItems  OrderItem[]
+}
+
+// 订单状态枚举
+enum OrderStatus {
+  AWAITING_PAYMENT // 待支付
+  RECEIVED // 已接单 (已支付，等待商家处理)
+  PREPARING // 制作中
+  COMPLETED // 已完成
+  CANCELLED // 已取消
+}
+
+// 订单模型
+model Order {
+  id         Int         @id @default(autoincrement())
+  totalPrice Float
+  status     OrderStatus @default(AWAITING_PAYMENT) // 默认状态改为待支付
+  createdAt  DateTime    @default(now())
+  merchantId Int
+  merchant   Merchant    @relation(fields: [merchantId], references: [id])
+  tableId    Int
+  table      Table       @relation(fields: [tableId], references: [id])
+  items      OrderItem[]
+}
+
+// 订单项模型（连接订单和菜单项）
+model OrderItem {
+  id         Int      @id @default(autoincrement())
+  quantity   Int
+  orderId    Int
+  order      Order    @relation(fields: [orderId], references: [id])
+  menuItemId Int
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+
+  @@unique([orderId, menuItemId])
+}

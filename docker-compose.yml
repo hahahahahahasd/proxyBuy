@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:14-alpine
+    # 建议移除：移除硬编码的容器名，便于未来可能的横向扩展
+    # container_name: payer_postgres
+    restart: unless-stopped
+    # 核心修改：不再硬编码环境变量，而是通过 env_file 引入
+    env_file:
+      - .env
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      # 核心修改：healthcheck 也使用变量，与 environment 保持同步
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      # 可选优化：将检查间隔调整为更温和的10秒
+      interval: 10s
+      timeout: 5s
+      retries: 5 # 重试5次，总计约50秒的启动等待时间，足够了
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: payer_backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "3001:3000"
+    environment:
+      DATABASE_URL: "postgresql://user:password@postgres:5432/restaurant_saas?schema=public"
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: restaurant_saas
+    command: >
+      sh -c "npx prisma db push --accept-data-loss &&
+             node dist/prisma/seed.js &&
+             node dist/main"
+    volumes:
+      - ./src:/usr/src/app/src
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

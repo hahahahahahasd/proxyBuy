@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商户后台</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; background-color: #f0f2f5; }
+        h1, h2 { text-align: center; color: #1f1f1f; }
+        #orders-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .order-card { border: 1px solid #ddd; border-radius: 5px; padding: 15px; margin-bottom: 15px; transition: background-color 0.5s; }
+        .order-card.new { background-color: #fffbe6; }
+        .order-card h3 { margin-top: 0; }
+        .order-card .status { float: right; padding: 5px 10px; border-radius: 12px; color: white; font-weight: bold; }
+        .order-actions button { margin-right: 10px; background-color: #28a745; }
+        .order-actions button:hover { background-color: #218838; }
+        #ws-status { text-align: center; padding: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>商户订单中心</h1>
+    <h2 id="merchant-info"></h2>
+    <div id="ws-status" style="color: red;">连接中...</div>
+    <div id="orders-container">
+        <h3>新订单</h3>
+        <div id="new-orders-list"></div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const merchantId = parseInt(params.get('merchantId'));
+
+        if (!merchantId) {
+            document.body.innerHTML = '<h1>错误：缺少商户信息</h1>';
+        }
+
+        const newOrdersList = document.getElementById('new-orders-list');
+        const wsStatusElem = document.getElementById('ws-status');
+        const notificationSound = new Audio('data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU2LjM2LjEwMAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV6urq6urq6urq6urq6urq6urq6urq6urq6v////////////////////////////////8AAAAATGF2YzU2LjQxAAAAAAAAAAAAAAAAAAAAAAA//OExAAAAAAAAAAAAAAAAAAAAAAAAsAAAAAElQAwAABaQwAMBAAARKwAAEkoAABLiAAATYgAAE8IAABRqAABV2AAAV7AAAWQgAAWlAAAAY2AAAZpAAAGnIAABruAAAcAgAAHIIAABzSAAAeAgAAHkIAAB5yAAAe7AAAfSAAAfggAAH/IAACCEAAAhRAAAIbgAACJIAAAmCAAAJwgAAClEAAApqgAAK7gAACyEAAAtpAAALnIAAAx6AAAMggAADNIAAA0CAAAAggAADXIAAA26AAAN9AAAOIgAADkIAAA5SAAARAgAAEUIAABFyAAARtgAAEfIAABJSAAAStgAAEuIAABNCAAA2AgAANwIAADeCAAADAAAAAIAAAAEAAAFaTEFNRTMuOTkuNVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//OExrAAAAANIAAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV-');
+        
+        document.getElementById('merchant-info').textContent = `商户 #${merchantId} 后台`;
+
+        const socket = io("ws://localhost:3001");
+
+        socket.on('connect', () => {
+            console.log('Socket.IO connected');
+            wsStatusElem.textContent = '已连接';
+            wsStatusElem.style.color = 'green';
+            socket.emit('joinMerchantRoom', { merchantId: merchantId });
+        });
+
+        socket.on('newOrder', (order) => {
+            console.log('Received new order:', order);
+            notificationSound.play();
+            addOrderToList(order);
+        });
+
+        socket.on('orderStatusUpdate', (order) => {
+            updateOrderStatusInList(order);
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Socket.IO disconnected');
+            wsStatusElem.textContent = '已断开';
+            wsStatusElem.style.color = 'red';
+        });
+        
+        socket.on('connect_error', (error) => {
+            console.error('Socket.IO Connection Error:', error);
+            wsStatusElem.textContent = '连接错误';
+            wsStatusElem.style.color = 'red';
+        });
+
+        function addOrderToList(order) {
+            const orderCard = document.createElement('div');
+            orderCard.className = 'order-card new';
+            orderCard.id = `order-${order.id}`;
+            orderCard.innerHTML = `
+                <h3>订单 #${order.id} (桌号: ${order.table.name})</h3>
+                <span class="status" style="background-color: red;">${order.status}</span>
+                <ul>
+                    ${order.items.map(item => `<li>${item.menuItem.name} x ${item.quantity}</li>`).join('')}
+                </ul>
+                <p>总金额: ¥${order.totalPrice.toFixed(2)}</p>
+                <div class="order-actions">
+                    <button onclick="updateStatus(${order.id}, 'PREPARING')">开始制作</button>
+                    <button onclick="updateStatus(${order.id}, 'COMPLETED')">完成订单</button>
+                </div>
+            `;
+            newOrdersList.prepend(orderCard);
+            
+            setTimeout(() => {
+                orderCard.classList.remove('new');
+            }, 1000);
+        }
+
+        function updateOrderStatusInList(order) {
+            const orderCard = document.getElementById(`order-${order.id}`);
+            if (orderCard) {
+                const statusElem = orderCard.querySelector('.status');
+                statusElem.textContent = order.status;
+                let color = 'grey';
+                switch(order.status) {
+                    case 'RECEIVED': color = 'red'; break;
+                    case 'PREPARING': color = 'blue'; break;
+                    case 'COMPLETED': color = 'green'; break;
+                }
+                statusElem.style.backgroundColor = color;
+            }
+        }
+
+        async function updateStatus(orderId, status) {
+            try {
+                await fetch(`/orders/${orderId}/status`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+            } catch (error) {
+                console.error('Failed to update order status:', error);
+                alert('更新状态失败');
+            }
+        }
+    </script>
+</body>
+</html>
