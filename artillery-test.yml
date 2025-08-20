@@ -1,0 +1,37 @@
+config:
+  target: "http://localhost:3001"
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      name: "Warm-up phase"
+    - duration: 120
+      arrivalRate: 5
+      rampTo: 50
+      name: "Ramp-up phase"
+    - duration: 300
+      arrivalRate: 50
+      name: "Sustained high-load phase"
+
+scenarios:
+  - name: "Browse Menu"
+    weight: 8
+    flow:
+      - get:
+          url: "/merchants/1/menu"
+
+  - name: "Place an Order"
+    weight: 2
+    flow:
+      - get:
+          url: "/merchants/1/menu"
+          capture:
+            json: "$.items[*].id"
+            as: "menuIds"
+      - function: "pickRandomItems"
+      - post:
+          url: "/orders"
+          json:
+            merchantId: 1
+            tableId: 1
+            items: "{{ items }}"
+

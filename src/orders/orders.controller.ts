@@ -1,5 +1,6 @@
 import {
   Controller,
+  Get,
   Post,
   Body,
   Param,
@@ -19,6 +20,16 @@ export class OrdersController {
   @Post()
   create(@Body() createOrderDto: CreateOrderDto) {
     return this.ordersService.create(createOrderDto);
+  }
+
+  @Get('merchant/:merchantId')
+  findAllForMerchant(@Param('merchantId', ParseIntPipe) merchantId: number) {
+    return this.ordersService.findAllForMerchant(merchantId);
+  }
+
+  @Get(':id')
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.ordersService.findOne(id);
   }
 
   @Post(':id/pay')

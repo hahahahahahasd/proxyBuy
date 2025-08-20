@@ -4,6 +4,7 @@ FROM node:18-bullseye AS deps
 WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm install --legacy-peer-deps
+RUN npm install @socket.io/redis-adapter redis
 
 
 
@@ -39,6 +40,10 @@ COPY ./wait-for-it.sh ./
 # Grant execution permissions
 RUN chmod +x ./entrypoint.sh ./wait-for-it.sh
 
+# Install PM2 process manager globally
+RUN npm install pm2 -g
+
 EXPOSE 3000
-# The final command to run
-CMD ["node", "dist/main"]
+
+# Set the entrypoint script to be executed when the container starts
+ENTRYPOINT ["./entrypoint.sh"]

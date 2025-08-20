@@ -1,25 +1,15 @@
 #!/bin/sh
-# entrypoint.sh
 
-# Wait for the database to be ready
-echo "Waiting for postgres to be fully available..."
+# Exit immediately if a command exits with a non-zero status.
+set -e
 
-# Use pg_isready to check the status of the PostgreSQL server.
-# The hostname 'postgres' is the service name from docker-compose.yml.
-# We loop until the command succeeds.
-while ! pg_isready -h postgres -p 5432 -q -U user; do
-  >&2 echo "Postgres is unavailable - sleeping"
-  sleep 1
-done
-
->&2 echo "Postgres is up - proceeding with database setup..."
-
-# Run Prisma migrations and seed the database
-# These commands will now only run when the database is guaranteed to be ready.
+# 1. Run database migrations and seeding
+echo "Running database push and seed..."
 npx prisma db push --accept-data-loss
-npx prisma db seed
+node dist/prisma/seed.js
 
->&2 echo "Database setup complete. Starting application..."
-
-# Execute the main command passed to the script (e.g., "node dist/main")
-exec "$@"
+# 2. Start the application using PM2 in cluster mode
+# The 'exec' command is important to ensure that PM2 becomes the main process (PID 1)
+# which allows it to receive signals like SIGINT/SIGTERM correctly from Docker.
+echo "Starting application with PM2..."
+exec pm2-runtime start dist/main.js --name payer-backend -i ${cpu_count:-0}

@@ -1,12 +1,31 @@
 version: '3.8'
 
+networks:
+  app-network:
+    driver: bridge
+
 services:
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    ports:
+      - "3001:80"
+    depends_on:
+      backend:
+        condition: service_healthy # Nginx will wait for the backend to be healthy
+    networks:
+      - app-network
+
+  redis:
+    image: redis:6-alpine
+    restart: unless-stopped
+    networks:
+      - app-network
+
   postgres:
     image: postgres:14-alpine
-    # 建议移除：移除硬编码的容器名，便于未来可能的横向扩展
-    # container_name: payer_postgres
     restart: unless-stopped
-    # 核心修改：不再硬编码环境变量，而是通过 env_file 引入
     env_file:
       - .env
     ports:
@@ -14,35 +33,42 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      # 核心修改：healthcheck 也使用变量，与 environment 保持同步
       test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
-      # 可选优化：将检查间隔调整为更温和的10秒
       interval: 10s
       timeout: 5s
-      retries: 5 # 重试5次，总计约50秒的启动等待时间，足够了
+      retries: 5
+    networks:
+      - app-network
 
   backend:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: payer_backend
     depends_on:
       postgres:
         condition: service_healthy
-    ports:
-      - "3001:3000"
+      redis:
+        condition: service_started
+    healthcheck:
+      # This check ensures the backend is ready to accept connections before Nginx starts proxying
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s # Give PM2 and NestJS time to start up
     environment:
-      DATABASE_URL: "postgresql://user:password@postgres:5432/restaurant_saas?schema=public"
+      DATABASE_URL: "postgresql://user:password@postgres:5432/restaurant_saas?schema=public&connection_limit=100"
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: restaurant_saas
-    command: >
-      sh -c "npx prisma db push --accept-data-loss &&
-             node dist/prisma/seed.js &&
-             node dist/main"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      cpu_count: 0 # Set back to 0 to use all available CPU cores
     volumes:
       - ./src:/usr/src/app/src
     restart: unless-stopped
+    networks:
+      - app-network
 
 volumes:
   postgres_data:

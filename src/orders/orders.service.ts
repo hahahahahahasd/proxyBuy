@@ -9,12 +9,12 @@ export class OrdersService {
   constructor(
     private prisma: PrismaService,
     private ordersGateway: OrdersGateway,
-  ) {}
+  ) { }
 
   async create(createOrderDto: CreateOrderDto) {
     const { merchantId, tableId, items } = createOrderDto;
 
-    const menuItemIds = items.map((item) => item.menuItemId);
+    const menuItemIds = items.map((item) => item.menuItemId).filter((id) => id !== undefined && id !== null);
     const menuItems = await this.prisma.menuItem.findMany({
       where: {
         id: { in: menuItemIds },
@@ -55,7 +55,7 @@ export class OrdersService {
   }
 
   async simulatePayment(orderId: number) {
-    const order = await this.prisma.order.findUnique({ where: { id: orderId }});
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
     if (!order) {
       throw new NotFoundException(`Order with ID ${orderId} not found.`);
     }
@@ -89,10 +89,53 @@ export class OrdersService {
     const updatedOrder = await this.prisma.order.update({
       where: { id: orderId },
       data: { status },
+      include: { // Include relations to broadcast the full order object
+        table: true,
+        items: {
+          include: {
+            menuItem: true,
+          },
+        },
+      }
     });
 
+    // Broadcast the update to all clients in the relevant rooms
     this.ordersGateway.broadcastOrderStatusUpdate(updatedOrder);
 
     return updatedOrder;
+  }
+
+  async findAllForMerchant(merchantId: number) {
+    return this.prisma.order.findMany({
+      where: { merchantId },
+      include: {
+        table: true,
+        items: {
+          include: {
+            menuItem: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  async findOne(id: number) {
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+      include: {
+        items: {
+          include: {
+            menuItem: true,
+          },
+        },
+      },
+    });
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${id} not found.`);
+    }
+    return order;
   }
 }

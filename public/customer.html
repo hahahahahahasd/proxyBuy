@@ -1,23 +1,85 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>顾客点餐</title>
     <style>
-        body { font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; background-color: #f4f4f9; }
-        h1, h2 { text-align: center; color: #333; }
-        #menu-container, #cart, #payment-simulation, #order-status-view { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .menu-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
-        .menu-item:last-child { border-bottom: none; }
-        button { background-color: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; }
-        button:hover { background-color: #0056b3; }
-        #place-order-btn { width: 100%; margin-top: 10px; }
-        #payment-simulation { display: none; text-align: center; }
-        #order-status-view { display: none; }
-        #status-badge { padding: 5px 10px; border-radius: 12px; color: white; font-weight: bold; }
+        body {
+            font-family: sans-serif;
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+
+        h1,
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        #menu-container,
+        #cart,
+        #payment-simulation,
+        #order-status-view {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #place-order-btn {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        #payment-simulation {
+            display: none;
+            text-align: center;
+        }
+
+        #order-status-view {
+            display: none;
+        }
+
+        #status-badge {
+            padding: 5px 10px;
+            border-radius: 12px;
+            color: white;
+            font-weight: bold;
+        }
     </style>
 </head>
+
 <body>
     <h1>欢迎光临</h1>
     <h2 id="table-info"></h2>
@@ -48,64 +110,74 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        const params = new URLSearchParams(window.location.search);
-        const merchantId = parseInt(params.get('merchantId'));
-        const tableId = parseInt(params.get('tableId'));
-
-        if (!merchantId || !tableId) {
-            document.body.innerHTML = '<h1>错误：缺少商户或餐桌信息</h1>';
-        }
-
+        // --- DOM Elements ---
+        const menuView = document.getElementById('menu-view');
+        const paymentView = document.getElementById('payment-simulation');
+        const statusView = document.getElementById('order-status-view');
         const menuItemsElem = document.getElementById('menu-items');
         const cartItemsElem = document.getElementById('cart-items');
         const totalPriceElem = document.getElementById('total-price');
         const placeOrderBtn = document.getElementById('place-order-btn');
         const confirmPaymentBtn = document.getElementById('confirm-payment-btn');
         const paymentAmountElem = document.getElementById('payment-amount');
+        const statusBadge = document.getElementById('status-badge');
+
+        // --- State ---
+        const params = new URLSearchParams(window.location.search);
+        const merchantId = parseInt(params.get('merchantId'));
+        const tableId = parseInt(params.get('tableId'));
+        const localStorageKey = `orderId-m${merchantId}-t${tableId}`;
 
         let menu = [];
+        let cart = {}; // { menuItemId: quantity }
         let currentOrder = null;
         let socket;
 
+        // --- UI Control ---
+        function showView(view) {
+            menuView.style.display = 'none';
+            paymentView.style.display = 'none';
+            statusView.style.display = 'none';
+            if (view) view.style.display = 'block';
+        }
+
+        // --- WebSocket Logic ---
         function initializeWebSocket() {
-            // Use the same origin as the HTTP page, which is more robust
-            // The "ws" protocol will be handled automatically by socket.io
+            if (socket && socket.connected) return;
+
+            // Force WebSocket transport to ensure stable connection behind Nginx proxy
             socket = io({
-                // This tells socket.io to explicitly connect, useful for re-connection logic
+                transports: ['websocket'],
                 autoConnect: false
             });
 
             socket.on('connect', () => {
-                console.log('Socket.IO connected with id:', socket.id);
-                // CRITICAL: If we have an order, we must re-join the room upon connection/re-connection
+                console.log('Socket.IO connected');
                 if (currentOrder) {
-                    console.log(`Re-joining room for order ${currentOrder.id}`);
                     socket.emit('joinOrderRoom', { orderId: currentOrder.id });
                 }
             });
 
             socket.on('orderStatusUpdate', (data) => {
-                // Ensure we are updating the status for the correct order
-                if(currentOrder && data.id === currentOrder.id) {
-                    console.log('Received order status update:', data);
+                if (currentOrder && data.id === currentOrder.id) {
+                    console.log('Received status update:', data.status);
                     updateOrderStatusDisplay(data.status);
+                    if (data.status === 'COMPLETED' || data.status === 'CANCELLED') {
+                        localStorage.removeItem(localStorageKey);
+                        setTimeout(() => window.location.reload(), 3000);
+                    }
                 }
             });
 
-            socket.on('disconnect', (reason) => {
-                console.log('Socket.IO disconnected:', reason);
-                // Socket.IO client will automatically try to reconnect, no need for manual intervention here.
-            });
-            
-            // Manually open the connection
+            socket.on('disconnect', (reason) => console.log('Socket.IO disconnected:', reason));
             socket.connect();
         }
 
+        // --- Display Logic ---
         function updateOrderStatusDisplay(status) {
-            const statusBadge = document.getElementById('status-badge');
             statusBadge.textContent = status;
             let color = 'grey';
-            switch(status) {
+            switch (status) {
                 case 'AWAITING_PAYMENT': color = 'orange'; break;
                 case 'RECEIVED': color = 'red'; break;
                 case 'PREPARING': color = 'blue'; break;
@@ -139,11 +211,6 @@
             });
         }
 
-        function addToCart(menuItemId) {
-            cart[menuItemId] = (cart[menuItemId] || 0) + 1;
-            renderCart();
-        }
-
         function renderCart() {
             cartItemsElem.innerHTML = '';
             let totalPrice = 0;
@@ -160,16 +227,18 @@
             totalPriceElem.textContent = totalPrice.toFixed(2);
         }
 
+        // --- Actions ---
+        window.addToCart = (menuItemId) => {
+            cart[menuItemId] = (cart[menuItemId] || 0) + 1;
+            renderCart();
+        }
+
         placeOrderBtn.addEventListener('click', async () => {
             const items = Object.keys(cart).map(menuItemId => ({
                 menuItemId: parseInt(menuItemId),
                 quantity: cart[menuItemId]
             }));
-
-            if (items.length === 0) {
-                alert('请先选择菜品');
-                return;
-            }
+            if (items.length === 0) return alert('请先选择菜品');
 
             try {
                 const response = await fetch('/orders', {
@@ -179,11 +248,9 @@
                 });
                 const order = await response.json();
                 currentOrder = order;
-                
-                document.getElementById('menu-view').style.display = 'none';
-                document.getElementById('payment-simulation').style.display = 'block';
+                localStorage.setItem(localStorageKey, order.id);
                 paymentAmountElem.textContent = order.totalPrice.toFixed(2);
-
+                showView(paymentView);
             } catch (error) {
                 console.error('Failed to place order:', error);
                 alert('下单失败');
@@ -194,26 +261,59 @@
             if (!currentOrder) return;
             try {
                 const response = await fetch(`/orders/${currentOrder.id}/pay`, { method: 'POST' });
-                const updatedOrder = await response.json();
-                
-                // Update currentOrder with the full order details from the server
-                currentOrder = updatedOrder;
-
-                document.getElementById('payment-simulation').style.display = 'none';
-                document.getElementById('order-status-view').style.display = 'block';
+                currentOrder = await response.json();
                 updateOrderStatusDisplay(currentOrder.status);
-                
-                // Initialize and connect WebSocket AFTER payment is confirmed
+                showView(statusView);
                 initializeWebSocket();
-
             } catch (error) {
                 console.error('Payment failed:', error);
                 alert('支付失败');
             }
         });
 
-        document.getElementById('table-info').textContent = `商户 #${merchantId} / 桌号 #${tableId}`;
-        fetchMenu();
+        // --- Initialization ---
+        async function initializePage() {
+            if (!merchantId || !tableId) {
+                document.body.innerHTML = '<h1>错误：缺少商户或餐桌信息</h1>';
+                return;
+            }
+            document.getElementById('table-info').textContent = `商户 #${merchantId} / 桌号 #${tableId}`;
+
+            const existingOrderId = localStorage.getItem(localStorageKey);
+            if (existingOrderId) {
+                try {
+                    const response = await fetch(`/orders/${existingOrderId}`);
+                    if (!response.ok) throw new Error('Order not found or expired');
+
+                    const order = await response.json();
+                    currentOrder = order;
+
+                    if (order.status === 'COMPLETED' || order.status === 'CANCELLED') {
+                        localStorage.removeItem(localStorageKey);
+                        showView(menuView);
+                        await fetchMenu();
+                    } else if (order.status === 'AWAITING_PAYMENT') {
+                        paymentAmountElem.textContent = order.totalPrice.toFixed(2);
+                        showView(paymentView);
+                    } else {
+                        updateOrderStatusDisplay(order.status);
+                        showView(statusView);
+                        initializeWebSocket();
+                    }
+                } catch (error) {
+                    console.warn('Failed to fetch existing order, starting new one.', error);
+                    localStorage.removeItem(localStorageKey);
+                    showView(menuView);
+                    await fetchMenu();
+                }
+            } else {
+                showView(menuView);
+                await fetchMenu();
+            }
+        }
+
+        initializePage();
     </script>
 </body>
+
 </html>

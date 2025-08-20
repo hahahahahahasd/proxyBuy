@@ -2,9 +2,17 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+import { RedisIoAdapter } from './adapters/redis-io.adapter';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Create and connect the Redis adapter
+  const redisIoAdapter = new RedisIoAdapter(app);
+  await redisIoAdapter.connectToRedis();
+
+  // Use the Redis adapter for WebSocket connections
+  app.useWebSocketAdapter(redisIoAdapter);
 
   // Serve static files from the "public" directory
   app.useStaticAssets(join(__dirname, '..', 'public'));

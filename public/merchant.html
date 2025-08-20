@@ -1,29 +1,226 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>商户后台</title>
     <style>
-        body { font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; background-color: #f0f2f5; }
-        h1, h2 { text-align: center; color: #1f1f1f; }
-        #orders-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .order-card { border: 1px solid #ddd; border-radius: 5px; padding: 15px; margin-bottom: 15px; transition: background-color 0.5s; }
-        .order-card.new { background-color: #fffbe6; }
-        .order-card h3 { margin-top: 0; }
-        .order-card .status { float: right; padding: 5px 10px; border-radius: 12px; color: white; font-weight: bold; }
-        .order-actions button { margin-right: 10px; background-color: #28a745; }
-        .order-actions button:hover { background-color: #218838; }
-        #ws-status { text-align: center; padding: 10px; font-weight: bold; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+                Helvetica, Arial, sans-serif;
+            max-width: 960px;
+            margin: auto;
+            padding: 20px;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+
+        h1,
+        h2,
+        h3 {
+            text-align: center;
+            color: #1f1f1f;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        /* Order Styles */
+        .order-card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: background-color: 0.5s;
+        }
+
+        .order-card.new {
+            background-color: #fffbe6;
+            border-color: #ffe58f;
+        }
+
+        .order-card h4 {
+            margin-top: 0;
+        }
+
+        .order-card .status {
+            float: right;
+            padding: 5px 10px;
+            border-radius: 12px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .order-actions button {
+            margin-right: 10px;
+        }
+
+        #ws-status {
+            text-align: center;
+            padding: 10px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        /* Menu Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f8f9fa;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color: 0.2s;
+        }
+
+        button.edit-btn {
+            background-color: #ffc107;
+        }
+
+        button.delete-btn {
+            background-color: #dc3545;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        #add-new-btn {
+            display: block;
+            margin-bottom: 20px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+        }
+
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        form label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        form input,
+        form textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        form button {
+            margin-top: 20px;
+            width: 100%;
+        }
     </style>
 </head>
+
 <body>
-    <h1>商户订单中心</h1>
+    <h1>商户后台</h1>
     <h2 id="merchant-info"></h2>
-    <div id="ws-status" style="color: red;">连接中...</div>
-    <div id="orders-container">
-        <h3>新订单</h3>
-        <div id="new-orders-list"></div>
+
+    <!-- Orders Section -->
+    <div id="orders-container" class="container">
+        <h3>实时订单</h3>
+        <div id="ws-status" style="color: red">连接中...</div>
+        <div id="orders-list"></div>
+    </div>
+
+    <!-- Menu Management Section -->
+    <div id="menu-management-container" class="container">
+        <h3>菜品管理</h3>
+        <button id="add-new-btn">添加新菜品</button>
+        <table>
+            <thead>
+                <tr>
+                    <th>名称</th>
+                    <th>价格 (¥)</th>
+                    <th>描述</th>
+                    <th>在售</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="menu-items-tbody"></tbody>
+        </table>
+    </div>
+
+    <!-- Menu Item Modal -->
+    <div id="menu-item-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3 id="modal-title">添加新菜品</h3>
+            <form id="menu-item-form">
+                <input type="hidden" id="menu-item-id" />
+                <label for="name">名称:</label>
+                <input type="text" id="name" name="name" required />
+                <label for="price">价格:</label>
+                <input type="number" id="price" name="price" step="0.01" required />
+                <label for="description">描述:</label>
+                <textarea id="description" name="description" rows="3"></textarea>
+                <label>
+                    <input type="checkbox" id="isAvailable" name="isAvailable" checked />
+                    是否在售
+                </label>
+                <button type="submit">保存</button>
+            </form>
+        </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -35,64 +232,88 @@
             document.body.innerHTML = '<h1>错误：缺少商户信息</h1>';
         }
 
-        const newOrdersList = document.getElementById('new-orders-list');
+        document.getElementById('merchant-info').textContent = `商户 #${merchantId}`;
+
+        // --- ORDERS ---
+        const ordersList = document.getElementById('orders-list');
         const wsStatusElem = document.getElementById('ws-status');
-        const notificationSound = new Audio('data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU2LjM2LjEwMAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV6urq6urq6urq6urq6urq6urq6urq6urq6v////////////////////////////////8AAAAATGF2YzU2LjQxAAAAAAAAAAAAAAAAAAAAAAA//OExAAAAAAAAAAAAAAAAAAAAAAAAsAAAAAElQAwAABaQwAMBAAARKwAAEkoAABLiAAATYgAAE8IAABRqAABV2AAAV7AAAWQgAAWlAAAAY2AAAZpAAAGnIAABruAAAcAgAAHIIAABzSAAAeAgAAHkIAAB5yAAAe7AAAfSAAAfggAAH/IAACCEAAAhRAAAIbgAACJIAAAmCAAAJwgAAClEAAApqgAAK7gAACyEAAAtpAAALnIAAAx6AAAMggAADNIAAA0CAAAAggAADXIAAA26AAAN9AAAOIgAADkIAAA5SAAARAgAAEUIAABFyAAARtgAAEfIAABJSAAAStgAAEuIAABNCAAA2AgAANwIAADeCAAADAAAAAIAAAAEAAAFaTEFNRTMuOTkuNVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//OExrAAAAANIAAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV-');
-        
-        document.getElementById('merchant-info').textContent = `商户 #${merchantId} 后台`;
 
-        const socket = io("ws://localhost:3001");
+        function setupWebSocket() {
+            const socket = io({
+                transports: ['websocket'], // Force WebSocket connection, skip HTTP polling
+                autoConnect: false
+            });
 
-        socket.on('connect', () => {
-            console.log('Socket.IO connected');
-            wsStatusElem.textContent = '已连接';
-            wsStatusElem.style.color = 'green';
-            socket.emit('joinMerchantRoom', { merchantId: merchantId });
-        });
+            socket.on('connect', () => {
+                console.log('Socket.IO connected');
+                wsStatusElem.textContent = '已连接';
+                wsStatusElem.style.color = 'green';
+                socket.emit('joinMerchantRoom', { merchantId: merchantId });
+            });
 
-        socket.on('newOrder', (order) => {
-            console.log('Received new order:', order);
-            notificationSound.play();
-            addOrderToList(order);
-        });
+            socket.on('newOrder', (order) => {
+                console.log('Received new order:', order);
+                renderOrderCard(order, true); // true for prepending
+            });
 
-        socket.on('orderStatusUpdate', (order) => {
-            updateOrderStatusInList(order);
-        });
+            socket.on('orderStatusUpdate', (order) => {
+                updateOrderStatusInList(order);
+            });
 
-        socket.on('disconnect', () => {
-            console.log('Socket.IO disconnected');
-            wsStatusElem.textContent = '已断开';
-            wsStatusElem.style.color = 'red';
-        });
-        
-        socket.on('connect_error', (error) => {
-            console.error('Socket.IO Connection Error:', error);
-            wsStatusElem.textContent = '连接错误';
-            wsStatusElem.style.color = 'red';
-        });
+            socket.on('disconnect', () => {
+                console.log('Socket.IO disconnected');
+                wsStatusElem.textContent = '已断开';
+                wsStatusElem.style.color = 'red';
+            });
 
-        function addOrderToList(order) {
+            socket.on('connect_error', (error) => {
+                console.error('Socket.IO Connection Error:', error);
+                wsStatusElem.textContent = '连接错误';
+                wsStatusElem.style.color = 'red';
+            });
+
+            socket.connect();
+        }
+
+        function getStatusColor(status) {
+            switch (status) {
+                case 'RECEIVED': return 'red';
+                case 'PREPARING': return 'blue';
+                case 'COMPLETED': return 'green';
+                case 'CANCELLED': return 'grey';
+                default: return 'grey';
+            }
+        }
+
+        function renderOrderCard(order, prepend = false) {
+            const existingCard = document.getElementById(`order-${order.id}`);
+            if (existingCard) {
+                existingCard.remove();
+            }
+
             const orderCard = document.createElement('div');
-            orderCard.className = 'order-card new';
+            orderCard.className = 'order-card';
             orderCard.id = `order-${order.id}`;
             orderCard.innerHTML = `
-                <h3>订单 #${order.id} (桌号: ${order.table.name})</h3>
-                <span class="status" style="background-color: red;">${order.status}</span>
-                <ul>
-                    ${order.items.map(item => `<li>${item.menuItem.name} x ${item.quantity}</li>`).join('')}
-                </ul>
-                <p>总金额: ¥${order.totalPrice.toFixed(2)}</p>
-                <div class="order-actions">
-                    <button onclick="updateStatus(${order.id}, 'PREPARING')">开始制作</button>
-                    <button onclick="updateStatus(${order.id}, 'COMPLETED')">完成订单</button>
-                </div>
-            `;
-            newOrdersList.prepend(orderCard);
-            
-            setTimeout(() => {
-                orderCard.classList.remove('new');
-            }, 1000);
+                    <h4>订单 #${order.id} (桌号: ${order.table.name})</h4>
+                    <span class="status" style="background-color: ${getStatusColor(order.status)};">${order.status}</span>
+                    <ul>
+                        ${order.items.map((item) => `<li>${item.menuItem.name} x ${item.quantity}</li>`).join('')}
+                    </ul>
+                    <p>总金额: ¥${order.totalPrice.toFixed(2)}</p>
+                    <div class="order-actions">
+                        <button onclick="updateStatus(${order.id}, 'PREPARING')">开始制作</button>
+                        <button onclick="updateStatus(${order.id}, 'COMPLETED')">完成订单</button>
+                    </div>
+                `;
+
+            if (prepend) {
+                ordersList.prepend(orderCard);
+                orderCard.classList.add('new');
+                setTimeout(() => orderCard.classList.remove('new'), 1000);
+            } else {
+                ordersList.appendChild(orderCard);
+            }
         }
 
         function updateOrderStatusInList(order) {
@@ -100,28 +321,155 @@
             if (orderCard) {
                 const statusElem = orderCard.querySelector('.status');
                 statusElem.textContent = order.status;
-                let color = 'grey';
-                switch(order.status) {
-                    case 'RECEIVED': color = 'red'; break;
-                    case 'PREPARING': color = 'blue'; break;
-                    case 'COMPLETED': color = 'green'; break;
-                }
-                statusElem.style.backgroundColor = color;
+                statusElem.style.backgroundColor = getStatusColor(order.status);
             }
         }
 
-        async function updateStatus(orderId, status) {
+        async function fetchInitialOrders() {
+            try {
+                const response = await fetch(`/orders/merchant/${merchantId}`);
+                const orders = await response.json();
+                ordersList.innerHTML = '';
+                orders.forEach(order => renderOrderCard(order));
+            } catch (error) {
+                console.error('Failed to fetch initial orders:', error);
+            }
+        }
+
+        window.updateStatus = async (orderId, status) => {
             try {
                 await fetch(`/orders/${orderId}/status`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ status })
+                    body: JSON.stringify({ status }),
                 });
             } catch (error) {
                 console.error('Failed to update order status:', error);
                 alert('更新状态失败');
             }
+        };
+
+        // --- MENU ---
+        const menuTbody = document.getElementById('menu-items-tbody');
+        const modal = document.getElementById('menu-item-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const form = document.getElementById('menu-item-form');
+        const addNewBtn = document.getElementById('add-new-btn');
+        const closeBtn = document.querySelector('.close-btn');
+
+        let currentEditingItemId = null;
+
+        async function fetchAndRenderMenu() {
+            try {
+                const response = await fetch(`/merchants/${merchantId}/menu/management`);
+                const menuItems = await response.json();
+
+                menuTbody.innerHTML = '';
+                menuItems.forEach((item) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                            <td>${item.name}</td>
+                            <td>${item.price.toFixed(2)}</td>
+                            <td>${item.description || ''}</td>
+                            <td>${item.isAvailable ? '是' : '否'}</td>
+                            <td class="actions">
+                                <button class="edit-btn" onclick="openEditModal(${item.id}, '${item.name}', ${item.price}, '${item.description || ''}', ${item.isAvailable})">编辑</button>
+                                <button class="delete-btn" onclick="deleteMenuItem(${item.id})">删除</button>
+                            </td>
+                        `;
+                    menuTbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Failed to fetch menu:', error);
+                alert('菜单加载失败');
+            }
         }
+
+        function openModal() { modal.style.display = 'block'; }
+        function closeModal() {
+            modal.style.display = 'none';
+            form.reset();
+            currentEditingItemId = null;
+        }
+
+        addNewBtn.onclick = () => {
+            modalTitle.textContent = '添加新菜品';
+            openModal();
+        };
+        closeBtn.onclick = closeModal;
+        window.onclick = (event) => {
+            if (event.target == modal) {
+                closeModal();
+            }
+        };
+
+        window.openEditModal = (id, name, price, description, isAvailable) => {
+            modalTitle.textContent = '编辑菜品';
+            currentEditingItemId = id;
+            document.getElementById('menu-item-id').value = id;
+            document.getElementById('name').value = name;
+            document.getElementById('price').value = price;
+            document.getElementById('description').value = description;
+            document.getElementById('isAvailable').checked = isAvailable;
+            openModal();
+        };
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const formData = {
+                name: document.getElementById('name').value,
+                price: parseFloat(document.getElementById('price').value),
+                description: document.getElementById('description').value,
+                isAvailable: document.getElementById('isAvailable').checked,
+            };
+
+            try {
+                let response;
+                if (currentEditingItemId) {
+                    response = await fetch(`/merchants/menu/${currentEditingItemId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData),
+                    });
+                } else {
+                    response = await fetch(`/merchants/${merchantId}/menu`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData),
+                    });
+                }
+                if (!response.ok) throw new Error('保存失败');
+                closeModal();
+                fetchAndRenderMenu();
+            } catch (error) {
+                console.error('Failed to save menu item:', error);
+                alert('保存失败');
+            }
+        });
+
+        window.deleteMenuItem = async (id) => {
+            if (!confirm('确定要删除这个菜品吗？')) return;
+            try {
+                const response = await fetch(`/merchants/menu/${id}`, {
+                    method: 'DELETE',
+                });
+                if (!response.ok) throw new Error('删除失败');
+                fetchAndRenderMenu();
+            } catch (error) {
+                console.error('Failed to delete menu item:', error);
+                alert('删除失败');
+            }
+        };
+
+        // --- INITIAL LOAD ---
+        function initialize() {
+            fetchInitialOrders();
+            setupWebSocket();
+            fetchAndRenderMenu();
+        }
+
+        initialize();
     </script>
 </body>
+
 </html>
