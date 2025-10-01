@@ -5,7 +5,7 @@ set -e
 
 # 1. Run database migrations and seeding
 echo "Running database push and seed..."
-npx prisma db push --accept-data-loss
+npx prisma db push --force-reset
 node dist/prisma/seed.js
 
 # 2. Start the application using PM2 in cluster mode

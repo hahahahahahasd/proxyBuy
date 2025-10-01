@@ -1,0 +1,106 @@
+/*颜色*/
+.color_black{
+  color: #000;
+}
+.color_large_black{
+  color: #333;
+}
+.color_middle_black{
+  color: #333;
+}
+
+.color_light_black{
+  color: #424242;
+}
+.color_gray{
+  color: #999999;
+}
+.color_white{
+  color: #fff;
+}
+
+/* 背景颜色 */
+
+.bg_black{
+  background-color: #000;
+}
+
+.bg_gray{
+  background-color: #F7F7F7;
+}
+
+.bg_white{
+  background-color:#fff;
+}
+.bg_orange{
+  background-color:#FF6726;
+}
+/*大小*/
+.fz_24{
+  font-size: .24rem;
+}
+.fz_26{
+  font-size: .26rem;
+}
+
+.fz_28{
+  font-size: .28rem;
+}
+
+
+
+.fz_30{
+  font-size: .30rem;
+}
+
+.fz_32{
+  font-size: .32rem;
+}
+
+.fz_36{
+  font-size: .36rem;
+}
+
+.fz_40{
+  font-size: .4rem;
+}
+
+.fz_42{
+  font-size: .42rem;
+}
+.fz_44{
+  font-size: .44rem;
+}
+
+.fz_48{
+  font-size: .48rem;
+}
+
+.fz_56{
+  font-size: .56rem;
+}
+
+.fwb{
+  font-weight:bold;
+}
+
+.text_center{
+  text-align: center;
+}
+
+.ellipsi_1{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.ellipsi_2{
+  text-overflow: -o-ellipsis-lastline;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+

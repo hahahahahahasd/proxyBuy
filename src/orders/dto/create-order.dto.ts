@@ -16,6 +16,12 @@ export class CreateOrderDto {
   @IsInt()
   tableId: number;
 
+  @IsNotEmpty()
+  storeName: string;
+
+  @IsNotEmpty()
+  storeAddress: string;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => OrderItemDto)

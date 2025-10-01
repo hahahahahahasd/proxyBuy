@@ -1,0 +1,963 @@
+/* html{font-size:42.6px;}
+@media screen and (min-width:320px){
+    html {font-size: 42.6px;}
+}
+@media screen and (min-width:330px){
+    html {font-size: 44px;}
+}
+@media screen and (min-width:360px){
+    html {font-size: 48px;}
+}
+@media screen and (min-width:375px){
+    html {font-size:50px;}
+}
+@media screen and (min-width:390px){
+    html {font-size: 52px;}
+}
+@media screen and (min-width:414px){
+    html {font-size: 55.2px;}
+}
+@media screen and (min-width:420px){
+    html {font-size: 56px;}
+}
+@media screen and (min-width:450px){
+    html {font-size: 60px;}
+}
+@media screen and (min-width:480px){
+    html {font-size: 64px;}
+}
+@media screen and (min-width:750px){
+    html {font-size: 100px;}
+    body {max-width: 750px;margin: 0 auto;}
+} */
+@media only screen and (device-width: 1080px) and (device-height: 1920px) {
+  html {
+    font-size: 144px;
+  }
+}
+
+@media only screen and (device-width: 1080px) and (device-height: 2160px) {
+  html {
+    font-size: 144px;
+  }
+
+  /* #ysb_invitate{background: url('../../assets/images/invitate/ysb_invitate.png');background-size: 100% 100%;
+      height: 15rem;width: 100%;}*/
+}
+
+@media only screen and (device-width: 1080px) and (device-height: 2240px) {
+  html {
+    font-size: 144px;
+  }
+
+  /* #ysb_invitate{background: url('../../assets/images/invitate/ysb_invitate.png');background-size: 100% 100%;
+      height: 16.8rem;width: 100%;}*/
+}
+
+/* 安卓系统尺寸*/
+
+
+@media only screen {
+  #x_share .share_item_boxs .info_box {
+    width: 5.1rem;
+    position: absolute;
+    top: 4.33rem;
+    left: 1.2rem;
+    z-index: 5;
+  }
+
+  #x_share .info_box_bg {
+    width: 6.03rem;
+    height: 6.6rem;
+    position: absolute;
+    top: 4.8rem;
+    left: 50%;
+    margin-left: -3.02rem;
+    z-index: 2;
+    background: url("http://file.chinapayer.com/app-h5/img/invte_iphonex_4_bg.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img1 {
+    background: url("http://file.chinapayer.com/app-h5/img/invte_iphonex_1.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img2 {
+    background: url("http://file.chinapayer.com/app-h5/img/invte_iphonex_2.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img3 {
+    background: url("http://file.chinapayer.com/app-h5/img/invte_iphonex_3.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img4 {
+    background: url("http://file.chinapayer.com/app-h5/img/invte_iphonex_4.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+}
+
+@media only screen and (max-width: 440px) and (max-height: 770px) {
+  #x_share .share_item_boxs .info_box {
+    width: 5.1rem;
+    position: absolute;
+    top: 4.33rem;
+    left: 1.2rem;
+    z-index: 5;
+  }
+
+  #x_share .info_box_bg {
+    width: 6.03rem;
+    height: 6.6rem;
+    position: absolute;
+    top: 4.8rem;
+    left: 50%;
+    margin-left: -3.02rem;
+    z-index: 2;
+    background: url("http://file.chinapayer.com/app-h5/img/invte_iphonex_4_bg.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img1 {
+    background: url("http://file.chinapayer.com/app-h5/img/invte_iphonex_1.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img2 {
+    background: url("http://file.chinapayer.com/app-h5/img/invte_iphonex_2.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img3 {
+    background: url("http://file.chinapayer.com/app-h5/img/invte_iphonex_3.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img4 {
+    background: url("http://file.chinapayer.com/app-h5/img/invte_iphonex_4.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+}
+
+@media only screen and (max-width: 360px) and (max-height: 720px) {
+  #x_share .share_item_boxs .info_box {
+    width: 5.1rem;
+    position: absolute;
+    top: 4.83rem;
+    left: 1.2rem;
+    z-index: 5;
+  }
+
+  #x_share .info_box_bg {
+    width: 6.03rem;
+    height: 6.6rem;
+    position: absolute;
+    top: 5.3rem;
+    left: 50%;
+    margin-left: -3.02rem;
+    z-index: 2;
+    background: url("http://file.chinapayer.com/app-h5/img/invte_iphonex_4_bg.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img1 {
+    background: url("http://file.chinapayer.com/app-h5/img/invte_iphonex_1.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img2 {
+    background: url("http://file.chinapayer.com/app-h5/img/invte_iphonex_2.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img3 {
+    background: url("http://file.chinapayer.com/app-h5/img/invte_iphonex_3.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img4 {
+    background: url("http://file.chinapayer.com/app-h5/img/invte_iphonex_4.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+}
+
+@media only screen and (max-width: 360px) and (max-height: 600px) {
+  #x_share .share_item_boxs .info_box {
+    width: 5.1rem;
+    position: absolute;
+    top: 4.33rem;
+    left: 1.2rem;
+    z-index: 5;
+  }
+
+  #x_share .info_box_bg {
+    width: 5.11rem;
+    height: 5.6rem;
+    position: absolute;
+    top: 4.8rem;
+    left: 50%;
+    margin-left: -2.55rem;
+    z-index: 2;
+    background: url("http://file.chinapayer.com/app-h5/img/invite_iphone6_4_bg.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img1 {
+    background: url("http://file.chinapayer.com/app-h5/img/invite_iphone6_1.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img2 {
+    background: url("http://file.chinapayer.com/app-h5/img/invite_iphone6_2.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img3 {
+    background: url("http://file.chinapayer.com/app-h5/img/invite_iphone6_3.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img4 {
+    background: url("http://file.chinapayer.com/app-h5/img/invite_iphone6_4.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+}
+
+
+/* iphone 6/7/8 */
+@media only screen and (device-width: 375px) and (device-height: 667px) {
+  #x_share .share_item_boxs .info_box {
+    width: 5.1rem;
+    position: absolute;
+    top: 4.33rem;
+    left: 1.2rem;
+    z-index: 5;
+  }
+
+  #x_share .info_box_bg {
+    width: 5.11rem;
+    height: 5.6rem;
+    position: absolute;
+    top: 4.8rem;
+    left: 50%;
+    margin-left: -2.55rem;
+    z-index: 2;
+    background: url("http://file.chinapayer.com/app-h5/img/invite_iphone6_4_bg.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img1 {
+    background: url("http://file.chinapayer.com/app-h5/img/invite_iphone6_1.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img2 {
+    background: url("http://file.chinapayer.com/app-h5/img/invite_iphone6_2.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img3 {
+    background: url("http://file.chinapayer.com/app-h5/img/invite_iphone6_3.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img4 {
+    background: url("http://file.chinapayer.com/app-h5/img/invite_iphone6_4.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+}
+
+/* iphone 6/7/8 Plus */
+@media only screen and (device-width: 414px) and (device-height: 736px) {
+
+  #x_share .share_item_boxs .info_box {
+    width: 5.1rem;
+    position: absolute;
+    top: 4.33rem;
+    left: 1.2rem;
+    z-index: 5;
+  }
+
+  #x_share .info_box_bg {
+    width: 5.11rem;
+    height: 5.6rem;
+    position: absolute;
+    top: 4.8rem;
+    left: 50%;
+    margin-left: -2.55rem;
+    z-index: 2;
+    background: url("http://file.chinapayer.com/app-h5/img/invite_iphone6_4_bg.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img1 {
+    background: url("http://file.chinapayer.com/app-h5/img/invite_iphone6_1.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img2 {
+    background: url("http://file.chinapayer.com/app-h5/img/invite_iphone6_2.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img3 {
+    background: url("http://file.chinapayer.com/app-h5/img/invite_iphone6_3.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img4 {
+    background: url("http://file.chinapayer.com/app-h5/img/invite_iphone6_4.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+
+}
+
+/* iphone X */
+@media only screen and (device-width: 375px) and (device-height: 812px) {
+  #x_share .share_item_boxs .info_box {
+    width: 5.1rem;
+    position: absolute;
+    top: 4.85rem !important;
+    left: 1.2rem;
+    z-index: 5;
+  }
+
+  #x_share .info_box_bg {
+    width: 6.03rem;
+    height: 6.6rem;
+    position: absolute;
+    top: 5.32rem;
+    left: 50%;
+    margin-left: -3.02rem;
+    z-index: 2;
+    background: url("http://file.chinapayer.com/app-h5/img/invte_iphonex_4_bg.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_btn_box {
+    bottom: 1rem !important;
+    left: 0.39rem;
+    position: fixed;
+  }
+
+  #x_share .share_img1 {
+    background: url("http://file.chinapayer.com/app-h5/img/invte_iphonex_1.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img2 {
+    background: url("http://file.chinapayer.com/app-h5/img/invte_iphonex_2.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img3 {
+    background: url("http://file.chinapayer.com/app-h5/img/invte_iphonex_3.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img4 {
+    background: url("http://file.chinapayer.com/app-h5/img/invte_iphonex_4.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  html {
+    font-size: 50px;
+  }
+
+  /* .iphonex .box{
+      width: 7.5rem;height:14.48rem;background:url("") no-repeat center;background-size: cover;
+  } */
+  /* 分享 */
+  #x_share .share_btn_box {
+    bottom: 1.6rem;
+  }
+
+  #x_share .share_swiper_boxs {
+    height: 14.48rem;
+  }
+
+  #x_share .share_item_boxs .info_box {
+    top: 4.0rem;
+  }
+
+  #x_share {
+    width: 7.5rem;
+    overflow: hidden;
+    position: relative;
+  }
+
+  #x_share .share_swiper_boxs {
+    height: 14.48rem;
+    position: relative;
+  }
+
+  #x_share .share_item_box {
+    position: relative;
+    width: 7.5rem;
+    height: 100%;
+  }
+
+  #share_ysb .go_app {
+    top: 12.13rem;
+  }
+
+  #share_yht .go_app {
+    top: 12.13rem;
+  }
+
+  #share_pay {
+    background: url('../../assets/images/share/share_pay_x.png');
+    background-size: 100% 100%;
+    height: 14.48rem;
+    width: 100%;
+  }
+
+  #share_pay .go_app {
+    top: 12.13rem;
+  }
+
+  #pay_invitate {
+    background: url('../../assets/images/invitate/pay_invitateX.png');
+    background-size: 100% 100%;
+    height: 15.72rem;
+    width: 100%;
+  }
+
+  #pay_invitate_no {
+    background: url('http://file.chinapayer.com/app-h5/img/pay_invitate_no02X.png');
+    background-size: 100% 100%;
+    height: 15.72rem;
+    width: 100%;
+  }
+
+
+  body {
+    padding-left: constant(safe-area-inset-left);
+    padding-right: constant(safe-area-inset-right);
+    padding-bottom: constant(safe-area-inset-bottom);
+    padding-top: constant(safe-area-inset-top);
+
+  }
+}
+
+/* iphone XR */
+@media only screen and (device-width: 414px) and (device-height: 896px) {
+  #x_share .share_item_boxs .info_box {
+    width: 5.1rem;
+    position: absolute;
+    top: 4.95rem !important;
+    left: 1.2rem;
+    z-index: 5;
+  }
+
+  #x_share .info_box_bg {
+    width: 6.03rem;
+    height: 6.6rem;
+    position: absolute;
+    top: 5.42rem;
+    left: 50%;
+    margin-left: -3.02rem;
+    z-index: 2;
+    background: url("http://file.chinapayer.com/app-h5/img/invte_iphonex_4_bg.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_btn_box {
+    bottom: 1rem !important;
+    left: 0.39rem;
+    position: fixed;
+  }
+
+  #x_share .share_img1 {
+    background: url("http://file.chinapayer.com/app-h5/img/invte_iphonex_1.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img2 {
+    background: url("http://file.chinapayer.com/app-h5/img/invte_iphonex_2.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img3 {
+    background: url("http://file.chinapayer.com/app-h5/img/invte_iphonex_3.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+
+  #x_share .share_img4 {
+    background: url("http://file.chinapayer.com/app-h5/img/invte_iphonex_4.png") no-repeat center;
+    background-size: 100% 100%;
+  }
+}
+
+#app {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  position: relative;
+  min-height: 100%;
+  max-height: 100%;
+}
+
+.clearfix:after {
+  display: block;
+  height: 0;
+  content: '\200B';
+  clear: both;
+}
+
+.f-l {
+  float: left;
+}
+
+.f-r {
+  float: right;
+}
+
+.gray {
+  background-color: #eee;
+}
+
+.gray1 {
+  background-color: #f2f4f7;
+}
+
+.white {
+  background-color: #fff;
+}
+
+.yellow {
+  background-color: #ffbe0d;
+}
+
+.orange {
+  background: #ff6726;
+}
+
+/*.share_ysb_com{background: url('../../assets/images/share/share_ysb_l.png') no-repeat scroll content-box content-box;
+width: 100%;background-size: 100% auto;}*/
+/*.share_yht_com{background: url('../../assets/images/share/share_yht_l.png') no-repeat scroll content-box content-box;
+  width: 100%;background-size: 100% auto;}*/
+.share_pay_com {
+  background: url('../../assets/images/share/share_pay_l.png') no-repeat scroll content-box content-box;
+  width: 100%;
+  background-size: 100% auto;
+}
+
+.share_com {
+  height: 100%;
+}
+
+.yd-radio-icon,
+.yd-checkbox-icon {
+  vertical-align: sub !important;
+}
+
+.yd-radio,
+.yd-checkbox {
+  width: 6.9rem;
+  height: .88rem;
+  line-height: .88rem;
+  padding-right: 0;
+  font-size: .28rem;
+  border: 1px solid #DDDDDD;
+  border-radius: 2px;
+  margin: .2rem 0 0 0;
+  padding-left: .3rem;
+  box-sizing: border-box;
+
+
+}
+
+.yd-radio.active,
+.yd-checkbox.active {
+  border: 1px solid #FF6726;
+}
+
+.yd-radio.active .yd-radio-text,
+.yd-checkbox.active .yd-checkbox-text {
+  color: #FF6726 !important;
+}
+
+.yd-radio-text,
+.yd-checkbox-text {
+  color: #424242FF !important;
+}
+
+.page-header {
+  width: 100%;
+  height: 1rem;
+  line-height: 1rem;
+  background-color: #fff;
+
+  text-align: center;
+  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 999;
+}
+
+.teacher .page-header {
+  background-color: transparent !important;
+}
+
+.page-header .icon img {
+  width: 26px;
+  height: 26px;
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 8px;
+  z-index: 9;
+  margin-top: -13px;
+
+}
+
+.page-header .icon_right img {
+  width: 18px;
+  height: 18px;
+  display: block;
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  z-index: 9;
+  margin-top: -9px;
+
+}
+
+.page-header .title {
+  font-size: .34rem;
+  color: #000000;
+}
+
+.attention {
+  position: relative;
+  text-align: center;
+  color: #FFFFFF;
+  font-size: .36rem;
+  margin-top: .5rem;
+  margin-bottom: .2rem;
+}
+
+.attention::before {
+  width: .7rem;
+  height: 1px;
+  content: '';
+  display: block;
+  position: absolute;
+  background-color: #fff;
+  top: 8px;
+  left: 50%;
+  margin-left: -80px;
+}
+
+.attention::after {
+  width: .7rem;
+  height: 1px;
+  content: '';
+  display: block;
+  position: absolute;
+  background-color: #fff;
+  top: 8px;
+  right: 50%;
+  margin-right: -80px;
+
+}
+
+html,
+body,
+#app {
+  width: 100% !important;
+  height: 100% !important;
+
+}
+
+.load .logo {
+  width: 1.94rem;
+  height: 1.94rem;
+  margin: 1.17rem auto .3rem;
+}
+
+.load .name {
+  font-size: .36rem;
+  color: #333333;
+  font-weight: bold;
+}
+
+.load .btn {
+  width: 6rem;
+  height: .88rem;
+}
+
+.load .btn_ios {
+  margin: 1.6rem auto .3rem;
+}
+
+.mint-swipe-indicator {
+  width: 5px;
+  height: 5px;
+  background: #fff;
+  opacity: 1;
+}
+
+.mint-swipe-indicator.is-active {
+  width: 8px;
+  height: 5px;
+  background: #FF6726;
+  border-radius: 6px;
+
+}
+
+.mint-tab-item-icon {
+  width: .6rem;
+  height: .6rem;
+  margin: 0 auto .24rem;
+}
+
+.mint-tab-item-label {
+  color: #333;
+  font-size: .26rem;
+}
+
+.knowledge .mint-tab-item-label {
+  color: #666666;
+  font-size: .28rem;
+  font-weight: bold;
+}
+
+.mint-navbar .mint-tab-item.is-selected .mint-tab-item-label {
+  /* color:#fff; */
+  font-weight: bold;
+}
+
+/* 展业守则 */
+.rule {
+  width: 100%;
+  padding-bottom: 0.6rem;
+}
+
+.rule .top {
+  width: 100%;
+  height: 4.24rem;
+  text-align: center;
+  background: url(http://file.chinapayer.com/app-h5/img/rule/Tutorial_top.png) no-repeat;
+  background-size: 100% 100%;
+  line-height: .8rem;
+}
+
+.rule .top p {
+  padding-top: 1.74rem;
+  font-weight: bolder;
+}
+
+.rule .bottom .img {
+  width: 100%;
+}
+
+.mint-toast.is-placemiddle {
+  padding: .15rem .8rem !important;
+  font-size: .28rem !important;
+  border-radius: .1rem;
+
+}
+
+.study_detail {
+  margin: 1.3rem .3rem 0;
+}
+
+.study_detail .thumb {
+  width: 100%;
+  margin-bottom: .55rem;
+}
+
+.study_detail .line {
+  width: 1rem;
+  height: 1px;
+  background: #AAAAAA;
+  margin-top: .52rem;
+  margin-bottom: .52rem;
+}
+
+.study_detail .h-title {
+  /* padding-top: 1.3rem; */
+  line-height: .64rem;
+  /* margin-top: 1.3rem; */
+}
+
+.study_detail .content {
+  line-height: 1.8;
+}
+
+.study_detail .content p {
+  margin-bottom: .3rem;
+  /* line-height: 1.8; */
+}
+
+.study_detail .content img {
+  max-width: 100%;
+}
+
+.study_detail .yangshi01 {
+  font-size: .36rem;
+  color: #333;
+  font-weight: bold;
+}
+
+.study_detail .yangshi02 {
+  font-size: .3rem;
+  color: #333;
+  font-weight: bold;
+}
+
+.study_detail .end {
+  width: 0.7rem;
+  height: 0.27rem;
+  margin: 0 auto;
+  padding-top: .8rem;
+  padding-bottom: .8rem;
+}
+
+.study_detail .end img {
+  width: 0.7rem;
+  height: 0.27rem;
+}
+
+.loader {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  color: #ff6726;
+  -webkit-transition: .3s color, .3s border;
+  transition: .3s color, .3s border;
+  position: absolute;
+  left: .24rem;
+  bottom: .93rem;
+  z-index: 9;
+  background-color: #f7f7f7;
+  border-radius: 50%;
+  padding-top: 2px;
+  padding-left: 2px;
+}
+
+[class*="loader-"] {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  color: inherit;
+}
+
+.loader-03 {
+  border: 1px solid currentcolor;
+  box-shadow: 0px 0px 8px 0px rgba(255, 121, 17, 0.24);
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  -webkit-animation: 0.8s loader-03 linear infinite;
+  animation: 0.8s loader-03 linear infinite;
+  position: relative;
+}
+
+@-webkit-keyframes loader-03 {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loader-03 {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+
+.ql-snow .ql-picker.ql-lineheight .ql-picker-item[data-value='initial']::before {
+  content: '默认';
+}
+
+.ql-snow .ql-picker.ql-lineheight .ql-picker-item[data-value='1']::before {
+  content: '1';
+}
+
+.ql-snow .ql-picker.ql-lineheight .ql-picker-item[data-value='1.5']::before {
+  content: '1.5';
+}
+
+.ql-snow .ql-picker.ql-lineheight .ql-picker-item[data-value='1.75']::before {
+  content: '1.75';
+}
+
+.ql-snow .ql-picker.ql-lineheight .ql-picker-item[data-value='2']::before {
+  content: '2';
+}
+
+.ql-snow .ql-picker.ql-lineheight .ql-picker-item[data-value='3']::before {
+  content: '3';
+}
+
+.ql-snow .ql-picker.ql-lineheight .ql-picker-item[data-value='4']::before {
+  content: '4';
+}
+
+.ql-snow .ql-picker.ql-lineheight .ql-picker-item[data-value='5']::before {
+  content: '5';
+}
+
+.ql-snow .ql-picker.ql-lineheight {
+  width: 70px;
+}
+
+.van-image-preview__overlay {
+  background-color: #000 !important;
+}
+
+.van-image-preview__close-icon {
+  font-size: .28rem !important;
+}
+
+.van-image-preview__cover {
+  width: 76px !important;
+  height: 33px !important;
+  position: absolute !important;
+  top: 92% !important;
+  left: 76% !important;
+}
+
+.van-image-preview__cover img {
+  width: 100%;
+  height: 100%;
+}
+
+[v-cloak] {
+  display: none
+}
+
+.vc-toolbar .vc-tool-tip_login {
+  background: #F2F3F5;
+  color: #07c160 !important;
+  font-size: 28px;
+}
+
+.number-symbol {
+  font-family: MiSans, MiSans;
+  font-weight: 500;
+  font-size: 30px;
+  color: #444444;
+}

@@ -64,6 +64,9 @@ model Order {
   tableId    Int
   table      Table       @relation(fields: [tableId], references: [id])
   items      OrderItem[]
+
+  storeName    String
+  storeAddress String
 }
 
 // 订单项模型（连接订单和菜单项）
