@@ -41,13 +41,14 @@ const formatStatus = (status: string): string => {
 // --- Data Fetching ---
 const fetchClaimDetails = async (orderId: number) => {
   try {
+    // Note: The API endpoint for claim details is now part of the main orders API
     const response = await fetch(`/api/orders/${orderId}/claim-details`);
     const result = await response.json();
     if (result.success) {
       claimCode.value = result.data.claimCode;
       qrCodeData.value = result.data.qrCodeData;
     } else {
-      throw new Error('Failed to fetch claim details');
+      throw new Error(result.message || 'Failed to fetch claim details');
     }
   } catch (error) {
     console.error(error);
@@ -70,13 +71,13 @@ const fetchOrderDetails = async () => {
       order.value = result.data;
       statusText.value = `订单状态: ${formatStatus(order.value.status)}`;
 
+      // If order is already completed, fetch claim details immediately
       if (order.value.status === 'COMPLETED') {
         await fetchClaimDetails(order.value.id);
       }
 
-      if (!['COMPLETED', 'CANCELLED', 'CLOSED'].includes(order.value.status)) {
-        setupWebSocketListeners();
-      }
+      // Set up WebSocket listeners for real-time updates
+      setupWebSocketListeners();
     } else {
       throw new Error('Failed to fetch order details');
     }
@@ -94,29 +95,37 @@ const setupWebSocketListeners = () => {
   const orderId = parseInt(props.id);
 
   socketService.onOrderStatusUpdate(async (updatedOrder) => {
-    if (updatedOrder.id === orderId) {
-      order.value = { ...order.value, ...updatedOrder };
-      statusText.value = `订单状态已更新: ${formatStatus(updatedOrder.status)}`;
+    if (updatedOrder.id !== orderId) return;
 
-      if (updatedOrder.status === 'COMPLETED') {
+    order.value = { ...order.value, ...updatedOrder };
+    statusText.value = `订单状态已更新: ${formatStatus(updatedOrder.status)}`;
+
+    // Handle different statuses
+    switch (updatedOrder.status) {
+      case 'COMPLETED':
+        showNotify({ type: 'success', message: '订单已完成！' });
         await fetchClaimDetails(orderId);
-      }
+        socketService.disconnect();
+        break;
 
-      if (updatedOrder.status === 'CANCELLED') {
+      case 'CANCELLED':
         showNotify({ type: 'warning', message: '订单已取消', duration: 3000 });
         setTimeout(() => router.push('/'), 3000);
-      } else if (['COMPLETED', 'CLOSED'].includes(updatedOrder.status)) {
-        showNotify({
-          type: updatedOrder.status === 'COMPLETED' ? 'success' : 'info',
-          message: `订单${formatStatus(updatedOrder.status)}`,
-        });
         socketService.disconnect();
-      }
+        break;
+
+      case 'CLOSED':
+        showNotify({ type: 'info', message: '订单已关闭' });
+        socketService.disconnect();
+        break;
     }
   });
 
-  socketService.connect();
-  socketService.joinOrderRoom(orderId);
+  // Connect and join the room if not already in a final state
+  if (!['COMPLETED', 'CANCELLED', 'CLOSED'].includes(order.value?.status)) {
+    socketService.connect();
+    socketService.joinOrderRoom(orderId);
+  }
 };
 
 // --- Lifecycle Hooks ---
@@ -176,7 +185,7 @@ onUnmounted(() => {
           :title="item.menuItem.name"
         >
           <template #label>{{ `数量: ${item.quantity}` }}</template>
-          <template #value>{{ `¥${(item.totalPrice || 0).toFixed(2)}` }}</template>
+          <template #value>{{ `¥${(item.menuItem.price * item.quantity).toFixed(2)}` }}</template>
         </van-cell>
       </van-cell-group>
     </div>

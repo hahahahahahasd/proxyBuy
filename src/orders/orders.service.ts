@@ -126,24 +126,15 @@ export class OrdersService {
   async getClaimDetails(id: number) {
     const order = await this.prisma.order.findUnique({
       where: { id },
-      include: {
-        items: {
-          include: {
-            menuItem: true,
-          },
-        },
-      },
     });
-     if (!order) {
-      throw new NotFoundException(`未找到ID为 ${id} 的订单。`);
+    if (!order || !order.claimCode || !order.qrCodeData) {
+      throw new NotFoundException(`未找到ID为 ${id} 的订单的取餐详情。`);
     }
-    const claimCode = order.id.toString().slice(-4).padStart(4, '0');
-    const qrCodeData = JSON.stringify({
-      orderId: order.id,
-      claimCode: claimCode,
-      timestamp: Date.now(),
-    });
-    return { claimCode, qrCodeData };
+    
+    return { 
+      claimCode: order.claimCode, 
+      qrCodeData: order.qrCodeData 
+    };
   }
 
   // --- 商户端方法 ---
@@ -234,9 +225,32 @@ export class OrdersService {
       );
     }
     
-    console.log('QR Code Synced:', syncQrCodeDto);
+    // 1. 保存二维码信息到数据库并更新状态
+    const updatedOrder = await this.prisma.order.update({
+      where: { id: orderId },
+      data: {
+        status: OrderStatus.COMPLETED,
+        claimCode: syncQrCodeDto.claimCode,
+        qrCodeData: syncQrCodeDto.qrCodeData,
+      },
+      include: {
+        items: {
+          include: {
+            menuItem: true,
+          },
+        },
+      },
+    });
 
-    return this.updateOrderStatus(orderId, OrderStatus.COMPLETED);
+    // 2. 广播订单状态和二维码信息的更新
+    const formattedOrder = this._formatOrderResponse(updatedOrder);
+    this.ordersGateway.broadcastOrderStatusUpdate(formattedOrder); // 广播状态为COMPLETED
+    this.ordersGateway.broadcastQrCodeUpdate(orderId, { // 广播二维码信息
+      claimCode: syncQrCodeDto.claimCode,
+      qrCodeData: syncQrCodeDto.qrCodeData,
+    });
+
+    return formattedOrder;
   }
 
   // --- 别名，用于兼容旧的或通用的 Controller ---

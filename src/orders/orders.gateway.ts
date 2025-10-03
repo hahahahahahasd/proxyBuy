@@ -59,4 +59,10 @@ export class OrdersGateway
     this.server.to(merchantRoom).to(orderRoom).emit('orderStatusUpdate', order);
     this.logger.log(`Emitted 'orderStatusUpdate' for order ${order.id} to rooms ${merchantRoom} and ${orderRoom}`);
   }
+
+  broadcastQrCodeUpdate(orderId: number, qrData: { claimCode: string, qrCodeData: string }) {
+    const room = `order-${orderId}`;
+    this.server.to(room).emit('qrCodeUpdated', qrData);
+    this.logger.log(`Emitted 'qrCodeUpdated' for order ${orderId} to room ${room}`);
+  }
 }

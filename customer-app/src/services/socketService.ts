@@ -60,6 +60,11 @@ class SocketService {
     this.getSocket().off('orderStatusUpdate');
     this.getSocket().on('orderStatusUpdate', callback);
   }
+
+  onQrCodeUpdate(callback: (data: { claimCode: string, qrCodeData: string }) => void) {
+    this.getSocket().off('qrCodeUpdated');
+    this.getSocket().on('qrCodeUpdated', callback);
+  }
 }
 
 // 导出单例

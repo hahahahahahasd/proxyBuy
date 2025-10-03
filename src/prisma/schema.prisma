@@ -68,6 +68,9 @@ model Order {
   assigneeId   Int? // 领取订单的员工ID
   assigneeName String? // 领取订单的员工姓名
 
+  claimCode    String? // 从第三方平台同步的取餐码
+  qrCodeData   String? // 从第三方平台同步的二维码数据
+
   storeName    String
   storeAddress String
 }
