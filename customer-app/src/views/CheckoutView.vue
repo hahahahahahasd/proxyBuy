@@ -29,12 +29,11 @@ const submitOrder = async () => {
     ({ item, quantity, selectedOptions }) => ({
       menuItemId: item.id,
       quantity,
-      selectedSpecifications: Object.entries(selectedOptions).reduce(
-        (acc, [key, value]) => {
-          acc[key] = value.name;
-          return acc;
-        },
-        {} as Record<string, string>,
+      selectedSpecifications: Object.entries(selectedOptions).map(
+        ([specName, option]) => ({
+          name: specName,
+          option: option.name,
+        }),
       ),
     }),
   );

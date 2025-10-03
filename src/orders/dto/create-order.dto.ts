@@ -1,5 +1,11 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsInt, IsNotEmpty, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  ValidateNested,
+} from 'class-validator';
 
 class OrderItemDto {
   @IsInt()
@@ -7,6 +13,10 @@ class OrderItemDto {
 
   @IsInt()
   quantity: number;
+
+  @IsArray()
+  @IsOptional()
+  selectedSpecifications?: any[];
 }
 
 export class CreateOrderDto {

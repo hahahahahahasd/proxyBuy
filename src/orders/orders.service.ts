@@ -86,6 +86,7 @@ export class OrdersService {
         items: {
           create: items.map((item) => ({
             quantity: item.quantity,
+            selectedSpecifications: item.selectedSpecifications || [],
             menuItem: {
               connect: { id: item.menuItemId },
             },
