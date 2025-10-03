@@ -34,15 +34,36 @@ model Table {
 
 // 菜单项模型
 model MenuItem {
-  id          Int         @id @default(autoincrement())
-  name        String // 菜品名称
-  price       Float // 价格
-  description String?
-  isAvailable Boolean     @default(true) // 是否在售
-  merchantId  Int
-  merchant    Merchant    @relation(fields: [merchantId], references: [id])
-  orderItems  OrderItem[]
+  id             Int             @id @default(autoincrement())
+  name           String // 菜品名称
+  price          Float // 价格
+  description    String?
+  imageUrl       String? // 商品图片链接
+  isAvailable    Boolean         @default(true) // 是否在售
+  merchantId     Int
+  merchant       Merchant        @relation(fields: [merchantId], references: [id])
+  orderItems     OrderItem[]
+  specifications Specification[]
 }
+
+// 商品规格模型 (如: 辣度, 尺寸)
+model Specification {
+  id         Int      @id @default(autoincrement())
+  name       String // e.g., "辣度"
+  menuItemId Int
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  options    Option[]
+}
+
+// 规格选项模型 (如: 不辣, 微辣, 大份, 小份)
+model Option {
+  id              Int           @id @default(autoincrement())
+  name            String // e.g., "微辣"
+  price           Float // 价格调整 (可以是 0, 正数或负数)
+  specificationId Int
+  specification   Specification @relation(fields: [specificationId], references: [id], onDelete: Cascade)
+}
+
 
 // 订单状态枚举
 enum OrderStatus {
@@ -77,12 +98,13 @@ model Order {
 
 // 订单项模型（连接订单和菜单项）
 model OrderItem {
-  id         Int      @id @default(autoincrement())
-  quantity   Int
-  orderId    Int
-  order      Order    @relation(fields: [orderId], references: [id])
-  menuItemId Int
-  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+  id                     Int      @id @default(autoincrement())
+  quantity               Int
+  orderId                Int
+  order                  Order    @relation(fields: [orderId], references: [id])
+  menuItemId             Int
+  menuItem               MenuItem @relation(fields: [menuItemId], references: [id])
+  selectedSpecifications Json? // 存储所选规格, e.g., [{"name": "辣度", "option": "微辣"}]
 
   @@unique([orderId, menuItemId])
 }

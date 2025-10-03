@@ -20,11 +20,14 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 export class ManagementMerchantsController {
   constructor(private readonly merchantsService: MerchantsService) {}
 
-  @Post('menu-items')
+  @Post(':merchantId/menu-items')
   @ApiOperation({ summary: '发布新菜品（可包含规格）' })
-  async createMenuItem(@Body() createMenuItemDto: CreateMenuItemDto) {
+  async createMenuItem(
+    @Param('merchantId', ParseIntPipe) merchantId: number,
+    @Body() createMenuItemDto: CreateMenuItemDto,
+  ) {
     const menuItem = await this.merchantsService.createMenuItem(
-      createMenuItemDto.merchantId,
+      merchantId,
       createMenuItemDto,
     );
     return { success: true, data: menuItem };

@@ -1,10 +1,27 @@
-import { IsString, IsNotEmpty, IsNumber, IsOptional, IsBoolean } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsString, IsNotEmpty, IsNumber, IsOptional, ValidateNested, IsArray } from 'class-validator';
+
+class OptionDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsNumber()
+  price: number;
+}
+
+class SpecificationDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => OptionDto)
+  options: OptionDto[];
+}
 
 export class CreateMenuItemDto {
-  @IsNumber()
-  @IsNotEmpty()
-  merchantId: number;
-
   @IsString()
   @IsNotEmpty()
   name: string;
@@ -16,7 +33,13 @@ export class CreateMenuItemDto {
   @IsOptional()
   description?: string;
 
-  @IsBoolean()
+  @IsString()
   @IsOptional()
-  isAvailable?: boolean;
+  imageUrl?: string;
+
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => SpecificationDto)
+  specifications?: SpecificationDto[];
 }

@@ -14,6 +14,13 @@ export class MerchantsService {
         merchantId: merchantId,
         isAvailable: true,
       },
+      include: {
+        specifications: {
+          include: {
+            options: true,
+          },
+        },
+      },
     });
 
     // 由于数据库模型当前没有分类，我们将所有菜品放入一个默认分类
@@ -35,6 +42,13 @@ export class MerchantsService {
       where: {
         merchantId: merchantId,
       },
+      include: {
+        specifications: {
+          include: {
+            options: true,
+          },
+        },
+      },
       orderBy: {
         id: 'asc',
       },
@@ -43,26 +57,100 @@ export class MerchantsService {
 
   // 新增菜品
   async createMenuItem(merchantId: number, createMenuItemDto: CreateMenuItemDto) {
+    const { specifications, ...menuItemData } = createMenuItemDto;
+
     return this.prisma.menuItem.create({
       data: {
-        ...createMenuItemDto,
+        ...menuItemData,
         merchantId,
+        specifications: specifications
+          ? {
+              create: specifications.map((spec) => ({
+                name: spec.name,
+                options: {
+                  create: spec.options.map((opt) => ({
+                    name: opt.name,
+                    price: opt.price,
+                  })),
+                },
+              })),
+            }
+          : undefined,
+      },
+      include: {
+        specifications: {
+          include: {
+            options: true,
+          },
+        },
       },
     });
   }
 
   // 更新菜品
   async updateMenuItem(menuItemId: number, updateMenuItemDto: UpdateMenuItemDto) {
-    return this.prisma.menuItem.update({
-      where: { id: menuItemId },
-      data: updateMenuItemDto,
+    const { specifications, ...menuItemData } = updateMenuItemDto;
+
+    // 使用事务来确保原子性
+    return this.prisma.$transaction(async (prisma) => {
+      // 1. 更新菜品基本信息
+      const updatedMenuItem = await prisma.menuItem.update({
+        where: { id: menuItemId },
+        data: menuItemData,
+      });
+
+      // 2. 如果有规格信息，则先删除旧的，再创建新的
+      if (specifications) {
+        // 删除旧的规格和选项
+        await prisma.specification.deleteMany({
+          where: { menuItemId: menuItemId },
+        });
+
+        // 创建新的规格和选项
+        for (const spec of specifications) {
+          await prisma.specification.create({
+            data: {
+              name: spec.name,
+              menuItemId: menuItemId,
+              options: {
+                create: spec.options.map((opt) => ({
+                  name: opt.name,
+                  price: opt.price,
+                })),
+              },
+            },
+          });
+        }
+      }
+
+      // 3. 返回完整更新后的菜品信息
+      return prisma.menuItem.findUnique({
+        where: { id: menuItemId },
+        include: {
+          specifications: {
+            include: {
+              options: true,
+            },
+          },
+        },
+      });
     });
   }
 
   // 删除菜品
   async deleteMenuItem(menuItemId: number) {
-    return this.prisma.menuItem.delete({
-      where: { id: menuItemId },
+    // 注意: Prisma 的级联删除默认是关闭的。
+    // 如果 schema.prisma 中设置了 onDelete: Cascade，则这里不需要手动删除关联数据。
+    // 假设没有设置，我们使用事务来确保原子性。
+    return this.prisma.$transaction(async (prisma) => {
+      // 1. 删除与菜品关联的规格和选项
+      await prisma.specification.deleteMany({
+        where: { menuItemId: menuItemId },
+      });
+      // 2. 删除菜品本身
+      return prisma.menuItem.delete({
+        where: { id: menuItemId },
+      });
     });
   }
 
