@@ -1,10 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrdersGateway } from './orders.gateway';
-import { OrderStatus } from '@prisma/client';
+import { OrderStatus, Order } from '@prisma/client';
 import { ClaimOrderDto } from './dto/claim-order.dto';
 import { SyncQrCodeDto } from './dto/sync-qr-code.dto';
+
+// 扩展Prisma生成的Order类型，以包含关联数据
+type OrderWithItems = Order & {
+  items: { menuItem: any }[];
+};
 
 @Injectable()
 export class OrdersService {
@@ -13,10 +22,32 @@ export class OrdersService {
     private ordersGateway: OrdersGateway,
   ) {}
 
+  /**
+   * 格式化订单响应，将 assigneeId 和 assigneeName 转换为嵌套对象。
+   * @param order - 从Prisma查询到的订单对象
+   * @returns 格式化后的订单对象，可安全地返回给客户端
+   */
+  private _formatOrderResponse(order: OrderWithItems | null) {
+    if (!order) {
+      return null;
+    }
+    const { assigneeId, assigneeName, ...rest } = order;
+    const response: any = { ...rest };
+
+    if (assigneeId !== null && assigneeName !== null) {
+      response.assignee = {
+        id: assigneeId,
+        name: assigneeName,
+      };
+    }
+    return response;
+  }
+
   // --- 顾客端方法 ---
 
   async createOrderForCustomer(createOrderDto: CreateOrderDto) {
-    const { merchantId, tableId, items, storeName, storeAddress } = createOrderDto;
+    const { merchantId, tableId, items, storeName, storeAddress } =
+      createOrderDto;
 
     const menuItemIds = items.map((item) => item.menuItemId);
     const menuItems = await this.prisma.menuItem.findMany({
@@ -27,9 +58,7 @@ export class OrdersService {
     });
 
     if (menuItems.length !== menuItemIds.length) {
-      throw new NotFoundException(
-        '一个或多个菜单项不存在或不属于该商户。',
-      );
+      throw new NotFoundException('一个或多个菜单项不存在或不属于该商户。');
     }
 
     const totalPrice = items.reduce((total, item) => {
@@ -47,7 +76,7 @@ export class OrdersService {
         totalPrice,
         storeName,
         storeAddress,
-        status: OrderStatus.AWAITING_PAYMENT, // 新订单状态为待支付
+        status: OrderStatus.RECEIVED,
         merchant: {
           connect: { id: merchantId },
         },
@@ -72,9 +101,9 @@ export class OrdersService {
       },
     });
 
-    // 通过WebSocket通知商户端有新订单
-    this.ordersGateway.sendNewOrderToMerchant(merchantId, order);
-    return order;
+    const formattedOrder = this._formatOrderResponse(order);
+    this.ordersGateway.sendNewOrderToMerchant(merchantId, formattedOrder);
+    return formattedOrder;
   }
 
   async getOrderByIdForCustomer(id: number) {
@@ -91,11 +120,23 @@ export class OrdersService {
     if (!order) {
       throw new NotFoundException(`未找到ID为 ${id} 的订单。`);
     }
-    return order;
+    return this._formatOrderResponse(order);
   }
 
   async getClaimDetails(id: number) {
-    const order = await this.getOrderByIdForCustomer(id);
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+      include: {
+        items: {
+          include: {
+            menuItem: true,
+          },
+        },
+      },
+    });
+     if (!order) {
+      throw new NotFoundException(`未找到ID为 ${id} 的订单。`);
+    }
     const claimCode = order.id.toString().slice(-4).padStart(4, '0');
     const qrCodeData = JSON.stringify({
       orderId: order.id,
@@ -108,7 +149,7 @@ export class OrdersService {
   // --- 商户端方法 ---
 
   async getOrdersByMerchant(merchantId: number) {
-    return this.prisma.order.findMany({
+    const orders = await this.prisma.order.findMany({
       where: { merchantId },
       include: {
         items: {
@@ -121,28 +162,81 @@ export class OrdersService {
         createdAt: 'desc',
       },
     });
+    return orders.map(order => this._formatOrderResponse(order));
   }
 
   async updateOrderStatus(orderId: number, status: OrderStatus) {
     const updatedOrder = await this.prisma.order.update({
       where: { id: orderId },
       data: { status },
+      include: {
+        items: {
+          include: {
+            menuItem: true,
+          },
+        },
+      },
     });
 
-    // 广播订单状态更新
-    this.ordersGateway.broadcastOrderStatusUpdate(updatedOrder);
-    return updatedOrder;
+    const formattedOrder = this._formatOrderResponse(updatedOrder);
+    this.ordersGateway.broadcastOrderStatusUpdate(formattedOrder);
+    return formattedOrder;
   }
 
-  // TODO: 实现具体的取餐和同步逻辑
   async claimOrder(orderId: number, claimOrderDto: ClaimOrderDto) {
-    console.log('claimOrder called with:', orderId, claimOrderDto);
-    return { success: true, message: '订单核销成功 (功能待实现)' };
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`未找到ID为 ${orderId} 的订单。`);
+    }
+
+    if (order.status !== OrderStatus.RECEIVED) {
+      throw new ConflictException(
+        `无法接单，订单当前状态为 "${order.status}"，而不是 "RECEIVED"。`,
+      );
+    }
+
+    const updatedOrder = await this.prisma.order.update({
+      where: { id: orderId },
+      data: {
+        status: OrderStatus.PREPARING,
+        assigneeId: claimOrderDto.assignee.id,
+        assigneeName: claimOrderDto.assignee.name,
+      },
+      include: {
+        items: {
+          include: {
+            menuItem: true,
+          },
+        },
+      },
+    });
+
+    const formattedOrder = this._formatOrderResponse(updatedOrder);
+    this.ordersGateway.broadcastOrderStatusUpdate(formattedOrder);
+    return formattedOrder;
   }
 
   async syncQrCode(orderId: number, syncQrCodeDto: SyncQrCodeDto) {
-    console.log('syncQrCode called with:', orderId, syncQrCodeDto);
-    return { success: true, message: '二维码同步成功 (功能待实现)' };
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`未找到ID为 ${orderId} 的订单。`);
+    }
+
+    if (order.status !== OrderStatus.PREPARING) {
+      throw new ConflictException(
+        `无法完成订单，订单当前状态为 "${order.status}"，而不是 "PREPARING"。`,
+      );
+    }
+    
+    console.log('QR Code Synced:', syncQrCodeDto);
+
+    return this.updateOrderStatus(orderId, OrderStatus.COMPLETED);
   }
 
   // --- 别名，用于兼容旧的或通用的 Controller ---
@@ -164,17 +258,30 @@ export class OrdersService {
   }
 
   async simulatePayment(orderId: number) {
-    const order = await this.getOrderByIdForCustomer(orderId);
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+    });
+    if (!order) {
+      throw new NotFoundException(`未找到ID为 ${orderId} 的订单。`);
+    }
     if (order.status !== 'AWAITING_PAYMENT') {
-      return order;
+      return this._formatOrderResponse(order as OrderWithItems);
     }
 
     const updatedOrder = await this.prisma.order.update({
       where: { id: orderId },
       data: { status: OrderStatus.RECEIVED },
+       include: {
+        items: {
+          include: {
+            menuItem: true,
+          },
+        },
+      },
     });
 
-    this.ordersGateway.sendNewOrderToMerchant(updatedOrder.merchantId, updatedOrder);
-    return updatedOrder;
+    const formattedOrder = this._formatOrderResponse(updatedOrder);
+    this.ordersGateway.sendNewOrderToMerchant(updatedOrder.merchantId, formattedOrder);
+    return formattedOrder;
   }
 }

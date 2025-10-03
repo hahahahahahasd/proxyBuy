@@ -65,6 +65,9 @@ model Order {
   table      Table       @relation(fields: [tableId], references: [id])
   items      OrderItem[]
 
+  assigneeId   Int? // 领取订单的员工ID
+  assigneeName String? // 领取订单的员工姓名
+
   storeName    String
   storeAddress String
 }

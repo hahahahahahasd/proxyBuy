@@ -22,13 +22,14 @@ const getStatusClass = (status: string) => {
     case 'CANCELLED': return 'status-cancelled';
     case 'CLOSED': return 'status-closed';
     case 'PREPARING': return 'status-preparing';
+    case 'RECEIVED': // Fallthrough
     default: return 'status-pending';
   }
 };
 
 const formatStatus = (status: string): string => {
   const statusMap: Record<string, string> = {
-    PENDING: '等待接单',
+    RECEIVED: '等待商家接单',
     PREPARING: '商家接单中',
     COMPLETED: '已完成',
     CANCELLED: '已取消',
@@ -164,7 +165,7 @@ onUnmounted(() => {
             }}</van-tag>
           </template>
         </van-cell>
-        <van-cell title="总价" :value="`¥${order.totalPrice.toFixed(2)}`" />
+        <van-cell title="总价" :value="`¥${(order.totalPrice || 0).toFixed(2)}`" />
       </van-cell-group>
 
       <!-- Order Items Section -->
@@ -175,7 +176,7 @@ onUnmounted(() => {
           :title="item.menuItem.name"
         >
           <template #label>{{ `数量: ${item.quantity}` }}</template>
-          <template #value>{{ `¥${item.totalPrice.toFixed(2)}` }}</template>
+          <template #value>{{ `¥${(item.totalPrice || 0).toFixed(2)}` }}</template>
         </van-cell>
       </van-cell-group>
     </div>
