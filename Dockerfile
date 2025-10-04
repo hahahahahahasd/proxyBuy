@@ -2,7 +2,7 @@
 # 安装所有依赖，包括 devDependencies，用于后续的构建
 FROM node:18-bullseye AS deps
 WORKDIR /usr/src/app
-COPY package*.json ./
+COPY packages/backend/package*.json ./
 RUN npm install --legacy-peer-deps
 RUN npm install @socket.io/redis-adapter redis
 
@@ -15,7 +15,7 @@ WORKDIR /usr/src/app
 # 从 deps 阶段拷贝完整的 node_modules
 COPY --from=deps /usr/src/app/node_modules ./node_modules
 # 拷贝所有源代码
-COPY . .
+COPY packages/backend/ .
 # 运行 Prisma Generate 和 Build
 # 此时因为有完整的 node_modules，所有 TS 模块都能被找到
 RUN npx prisma generate
@@ -33,7 +33,7 @@ COPY --from=builder /usr/src/app/dist ./dist
 # The prisma schema file is needed at runtime
 COPY --from=builder /usr/src/app/src/prisma ./prisma
 # Copy static assets
-COPY --from=builder /usr/src/app/public ./public
+COPY public ./public
 # Copy entrypoint and wait-for-it scripts
 COPY ./entrypoint.sh ./
 COPY ./wait-for-it.sh ./

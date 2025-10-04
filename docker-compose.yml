@@ -65,7 +65,7 @@ services:
     ports:
       - "3000:3000" # 将容器的 3000 端口映射到宿主机的 3000 端口
     volumes:
-      - ./src:/usr/src/app/src
+      - ./packages/backend/src:/usr/src/app/src
       - ./public:/usr/src/app/public
     restart: unless-stopped
     networks:
