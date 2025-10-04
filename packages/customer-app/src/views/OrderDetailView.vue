@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { showNotify } from 'vant';
-import { socketService } from '@/services/socketService';
-import QrcodeVue from 'qrcode.vue';
+import { ref, onMounted, onUnmounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { showNotify } from "vant";
+import { socketService } from "@/services/socketService";
+import QrcodeVue from "qrcode.vue";
 
 // --- Component Props and State ---
 const props = defineProps<{ id: string }>();
@@ -11,36 +11,36 @@ const router = useRouter();
 
 const order = ref<any>(null);
 const isLoading = ref(true);
-const statusText = ref('正在获取订单详情...');
+const statusText = ref("正在获取订单详情...");
 const claimCode = ref<string | null>(null);
 const qrCodeData = ref<string | null>(null);
 
 // --- Helper Functions ---
 const getStatusClass = (status: string) => {
   switch (status) {
-    case 'COMPLETED':
-      return 'status-completed';
-    case 'CANCELLED':
-      return 'status-cancelled';
-    case 'CLOSED':
-      return 'status-closed';
-    case 'PREPARING':
-      return 'status-preparing';
-    case 'RECEIVED': // Fallthrough
+    case "COMPLETED":
+      return "status-completed";
+    case "CANCELLED":
+      return "status-cancelled";
+    case "CLOSED":
+      return "status-closed";
+    case "PREPARING":
+      return "status-preparing";
+    case "RECEIVED": // Fallthrough
     default:
-      return 'status-pending';
+      return "status-pending";
   }
 };
 
 const formatStatus = (status: string): string => {
   const statusMap: Record<string, string> = {
-    RECEIVED: '等待商家接单',
-    PREPARING: '商家支付中',
-    COMPLETED: '已完成',
-    CANCELLED: '已取消',
-    CLOSED: '已关闭',
+    RECEIVED: "等待商家接单",
+    PREPARING: "商家支付中",
+    COMPLETED: "已完成",
+    CANCELLED: "已取消",
+    CLOSED: "已关闭",
   };
-  return statusMap[status] || '未知状态';
+  return statusMap[status] || "未知状态";
 };
 
 // --- Data Fetching ---
@@ -53,11 +53,11 @@ const fetchClaimDetails = async (orderId: number) => {
       claimCode.value = result.data.claimCode;
       qrCodeData.value = result.data.qrCodeData;
     } else {
-      throw new Error(result.message || 'Failed to fetch claim details');
+      throw new Error(result.message || "Failed to fetch claim details");
     }
   } catch (error) {
     console.error(error);
-    showNotify({ type: 'danger', message: '无法获取取餐码' });
+    showNotify({ type: "danger", message: "无法获取取餐码" });
   }
 };
 
@@ -67,9 +67,9 @@ const fetchOrderDetails = async () => {
     const response = await fetch(`/api/orders/${props.id}`);
     const result = await response.json();
     if (result.success) {
-      if (result.data.status === 'CLOSED') {
-        showNotify({ type: 'info', message: '该订单已关闭' });
-        router.push('/');
+      if (result.data.status === "CLOSED") {
+        showNotify({ type: "info", message: "该订单已关闭" });
+        router.push("/");
         return;
       }
 
@@ -77,19 +77,19 @@ const fetchOrderDetails = async () => {
       statusText.value = `订单状态: ${formatStatus(order.value.status)}`;
 
       // If order is already completed, fetch claim details immediately
-      if (order.value.status === 'COMPLETED') {
+      if (order.value.status === "COMPLETED") {
         await fetchClaimDetails(order.value.id);
       }
 
       // Set up WebSocket listeners for real-time updates
       setupWebSocketListeners();
     } else {
-      throw new Error('Failed to fetch order details');
+      throw new Error("Failed to fetch order details");
     }
   } catch (error) {
     console.error(error);
-    statusText.value = '获取订单详情失败';
-    showNotify({ type: 'danger', message: '无法加载订单' });
+    statusText.value = "获取订单详情失败";
+    showNotify({ type: "danger", message: "无法加载订单" });
   } finally {
     isLoading.value = false;
   }
@@ -107,27 +107,27 @@ const setupWebSocketListeners = () => {
 
     // Handle different statuses
     switch (updatedOrder.status) {
-      case 'COMPLETED':
-        showNotify({ type: 'success', message: '订单已完成！' });
+      case "COMPLETED":
+        showNotify({ type: "success", message: "订单已完成！" });
         await fetchClaimDetails(orderId);
         socketService.disconnect();
         break;
 
-      case 'CANCELLED':
-        showNotify({ type: 'warning', message: '订单已取消', duration: 3000 });
-        setTimeout(() => router.push('/'), 3000);
+      case "CANCELLED":
+        showNotify({ type: "warning", message: "订单已取消", duration: 3000 });
+        setTimeout(() => router.push("/"), 3000);
         socketService.disconnect();
         break;
 
-      case 'CLOSED':
-        showNotify({ type: 'info', message: '订单已关闭' });
+      case "CLOSED":
+        showNotify({ type: "info", message: "订单已关闭" });
         socketService.disconnect();
         break;
     }
   });
 
   // Connect and join the room if not already in a final state
-  if (!['COMPLETED', 'CANCELLED', 'CLOSED'].includes(order.value?.status)) {
+  if (!["COMPLETED", "CANCELLED", "CLOSED"].includes(order.value?.status)) {
     socketService.connect();
     socketService.joinOrderRoom(orderId);
   }
@@ -239,6 +239,7 @@ onUnmounted(() => {
 .claim-code-label {
   font-size: 14px;
   color: var(--van-text-color-2);
+  margin-bottom: 10px;
 }
 .claim-code-value {
   font-size: 28px;
