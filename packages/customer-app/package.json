@@ -11,6 +11,7 @@
   "dependencies": {
     "@vueuse/core": "^13.9.0",
     "pinia": "^3.0.3",
+    "pinyin-pro": "^3.27.0",
     "qrcode": "^1.5.4",
     "qrcode.vue": "^3.6.0",
     "socket.io-client": "^4.8.1",

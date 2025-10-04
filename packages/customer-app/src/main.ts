@@ -24,7 +24,13 @@ import {
   Sidebar,
   SidebarItem,
   Popup,
-  Tag
+  Tag,
+  Field,
+  Area,
+  IndexBar,      // <-- 新增
+  IndexAnchor,   // <-- 新增
+  List,          // <-- 新增(之前未显式注册，最佳实践是补上)
+  Empty          // <-- 新增(之前未显式注册，最佳实践是补上)
 } from 'vant';
 
 // 2. 引入 Vant 全局样式
@@ -49,6 +55,12 @@ app.use(Sidebar);
 app.use(SidebarItem);
 app.use(Popup);
 app.use(Tag);
+app.use(Field);
+app.use(Area);
+app.use(IndexBar);     // <-- 新增
+app.use(IndexAnchor);  // <-- 新增
+app.use(List);         // <-- 新增
+app.use(Empty);        // <-- 新增
 
 
 app.use(createPinia())
