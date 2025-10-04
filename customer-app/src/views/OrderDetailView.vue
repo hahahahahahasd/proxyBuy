@@ -18,19 +18,24 @@ const qrCodeData = ref<string | null>(null);
 // --- Helper Functions ---
 const getStatusClass = (status: string) => {
   switch (status) {
-    case 'COMPLETED': return 'status-completed';
-    case 'CANCELLED': return 'status-cancelled';
-    case 'CLOSED': return 'status-closed';
-    case 'PREPARING': return 'status-preparing';
+    case 'COMPLETED':
+      return 'status-completed';
+    case 'CANCELLED':
+      return 'status-cancelled';
+    case 'CLOSED':
+      return 'status-closed';
+    case 'PREPARING':
+      return 'status-preparing';
     case 'RECEIVED': // Fallthrough
-    default: return 'status-pending';
+    default:
+      return 'status-pending';
   }
 };
 
 const formatStatus = (status: string): string => {
   const statusMap: Record<string, string> = {
     RECEIVED: '等待商家接单',
-    PREPARING: '商家接单中',
+    PREPARING: '商家支付中',
     COMPLETED: '已完成',
     CANCELLED: '已取消',
     CLOSED: '已关闭',
@@ -165,8 +170,16 @@ onUnmounted(() => {
       <!-- Order Status Section -->
       <van-cell-group inset>
         <van-cell title="订单号" :value="order.id" />
-        <van-cell v-if="order.storeName" title="下单门店" :value="order.storeName" />
-        <van-cell v-if="order.storeAddress" title="门店地址" :label="order.storeAddress" />
+        <van-cell
+          v-if="order.storeName"
+          title="下单门店"
+          :value="order.storeName"
+        />
+        <van-cell
+          v-if="order.storeAddress"
+          title="门店地址"
+          :label="order.storeAddress"
+        />
         <van-cell title="订单状态">
           <template #value>
             <van-tag :class="getStatusClass(order.status)" size="medium">{{
@@ -174,7 +187,10 @@ onUnmounted(() => {
             }}</van-tag>
           </template>
         </van-cell>
-        <van-cell title="总价" :value="`¥${(order.totalPrice || 0).toFixed(2)}`" />
+        <van-cell
+          title="总价"
+          :value="`¥${(order.totalPrice || 0).toFixed(2)}`"
+        />
       </van-cell-group>
 
       <!-- Order Items Section -->
@@ -185,7 +201,9 @@ onUnmounted(() => {
           :title="item.menuItem.name"
         >
           <template #label>{{ `数量: ${item.quantity}` }}</template>
-          <template #value>{{ `¥${(item.menuItem.price * item.quantity).toFixed(2)}` }}</template>
+          <template #value>{{
+            `¥${(item.menuItem.price * item.quantity).toFixed(2)}`
+          }}</template>
         </van-cell>
       </van-cell-group>
     </div>
