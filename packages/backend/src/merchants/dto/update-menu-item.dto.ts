@@ -30,6 +30,10 @@ export class UpdateMenuItemDto {
   @IsOptional()
   price?: number;
 
+  @IsNumber()
+  @IsOptional()
+  originalPrice?: number;
+
   @IsString()
   @IsOptional()
   description?: string;

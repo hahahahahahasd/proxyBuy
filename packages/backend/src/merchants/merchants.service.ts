@@ -56,12 +56,26 @@ export class MerchantsService {
   }
 
   // 新增菜品
-  async createMenuItem(merchantId: number, createMenuItemDto: CreateMenuItemDto) {
-    const { specifications, ...menuItemData } = createMenuItemDto;
+  async createMenuItem(
+    merchantId: number,
+    createMenuItemDto: CreateMenuItemDto,
+  ) {
+    const {
+      name,
+      price,
+      originalPrice,
+      description,
+      imageUrl,
+      specifications,
+    } = createMenuItemDto;
 
     return this.prisma.menuItem.create({
       data: {
-        ...menuItemData,
+        name,
+        price,
+        originalPrice,
+        description,
+        imageUrl,
         merchantId,
         specifications: specifications
           ? {
@@ -88,15 +102,31 @@ export class MerchantsService {
   }
 
   // 更新菜品
-  async updateMenuItem(menuItemId: number, updateMenuItemDto: UpdateMenuItemDto) {
-    const { specifications, ...menuItemData } = updateMenuItemDto;
+  async updateMenuItem(
+    menuItemId: number,
+    updateMenuItemDto: UpdateMenuItemDto,
+  ) {
+    const {
+      name,
+      price,
+      originalPrice,
+      description,
+      imageUrl,
+      specifications,
+    } = updateMenuItemDto;
 
     // 使用事务来确保原子性
     return this.prisma.$transaction(async (prisma) => {
       // 1. 更新菜品基本信息
-      const updatedMenuItem = await prisma.menuItem.update({
+      await prisma.menuItem.update({
         where: { id: menuItemId },
-        data: menuItemData,
+        data: {
+          name,
+          price,
+          originalPrice,
+          description,
+          imageUrl,
+        },
       });
 
       // 2. 如果有规格信息，则先删除旧的，再创建新的

@@ -25,6 +25,7 @@ CREATE TABLE "MenuItem" (
     "name" TEXT NOT NULL,
     "description" TEXT,
     "price" DOUBLE PRECISION NOT NULL,
+    "originalPrice" DOUBLE PRECISION NOT NULL,
     "imageUrl" TEXT,
     "isAvailable" BOOLEAN NOT NULL DEFAULT true,
     "categoryId" INTEGER NOT NULL,

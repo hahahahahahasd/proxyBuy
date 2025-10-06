@@ -36,7 +36,8 @@ model Table {
 model MenuItem {
   id             Int             @id @default(autoincrement())
   name           String // 菜品名称
-  price          Float // 价格
+  price          Float // 现价
+  originalPrice  Float?          // 原价
   description    String?
   imageUrl       String? // 商品图片链接
   isAvailable    Boolean         @default(true) // 是否在售

@@ -151,11 +151,21 @@ onMounted(() => {
           <van-card
             v-for="item in c.items"
             :key="item.id"
-            :price="item.price.toFixed(2)"
             :desc="item.description || ''"
             :title="item.name"
             :thumb="item.imageUrl || 'https://img.yzcdn.cn/vant/ipad.jpeg'"
           >
+            <template #price>
+              <div class="price-container">
+                <span class="current-price">¥{{ item.price.toFixed(2) }}</span>
+                <span
+                  v-if="item.originalPrice && item.originalPrice > item.price"
+                  class="original-price"
+                >
+                  ¥{{ item.originalPrice.toFixed(2) }}
+                </span>
+              </div>
+            </template>
             <template #footer>
               <van-button
                 v-if="item.specifications?.length"
@@ -267,6 +277,21 @@ onMounted(() => {
   font-size: 14px;
   color: #323233;
   font-weight: 500;
+}
+.price-container {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+.current-price {
+  color: var(--van-danger-color);
+  font-size: 16px;
+  font-weight: bold;
+}
+.original-price {
+  color: #969799;
+  text-decoration: line-through;
+  font-size: 12px;
 }
 .spec-popup {
   padding: 16px;

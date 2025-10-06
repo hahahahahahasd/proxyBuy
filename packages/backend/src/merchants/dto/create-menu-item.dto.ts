@@ -29,6 +29,10 @@ export class CreateMenuItemDto {
   @IsNumber()
   price: number;
 
+  @IsNumber()
+  @IsOptional()
+  originalPrice?: number;
+
   @IsString()
   @IsOptional()
   description?: string;

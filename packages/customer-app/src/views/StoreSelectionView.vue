@@ -11,7 +11,7 @@ const router = useRouter();
 const merchantStore = useMerchantStore();
 
 // --- Component State ---
-const viewMode = ref<'city-selection' | 'store-list'>('city-selection');
+const viewMode = ref<"city-selection" | "store-list">("city-selection");
 const stores = ref<any[]>([]);
 const isLoading = ref(false);
 const city = ref("北京");
@@ -23,7 +23,7 @@ const cityList = computed(() => {
   const groupedCities: { [key: string]: string[] } = {};
 
   cities.forEach((cityName) => {
-    const firstLetter = pinyin(cityName, { pattern: 'first' })[0].toUpperCase();
+    const firstLetter = pinyin(cityName, { pattern: "first" })[0].toUpperCase();
     if (!groupedCities[firstLetter]) {
       groupedCities[firstLetter] = [];
     }
@@ -34,7 +34,7 @@ const cityList = computed(() => {
   return Object.keys(groupedCities)
     .sort()
     .reduce((acc, key) => {
-      acc[key] = groupedCities[key].sort((a, b) => a.localeCompare(b, 'zh-CN'));
+      acc[key] = groupedCities[key].sort((a, b) => a.localeCompare(b, "zh-CN"));
       return acc;
     }, {} as { [key: string]: string[] });
 });
@@ -44,13 +44,13 @@ const simulatedGpsCity = ref("广州市"); // Simulated GPS city
 
 // --- Functions ---
 const onCitySelect = (selectedCity: string) => {
-  city.value = selectedCity.replace('市', ''); // Remove '市' for API call
-  viewMode.value = 'store-list';
+  city.value = selectedCity.replace("市", ""); // Remove '市' for API call
+  viewMode.value = "store-list";
   fetchStores();
 };
 
 const switchToCitySelection = () => {
-  viewMode.value = 'city-selection';
+  viewMode.value = "city-selection";
 };
 
 const fetchStores = async () => {
@@ -96,7 +96,11 @@ const selectStore = (store: any) => {
       <van-index-bar :index-list="['#', ...indexList]">
         <!-- GPS Location -->
         <van-index-anchor index="#">定位城市</van-index-anchor>
-        <van-cell :title="simulatedGpsCity" @click="onCitySelect(simulatedGpsCity)" is-link />
+        <van-cell
+          :title="simulatedGpsCity"
+          @click="onCitySelect(simulatedGpsCity)"
+          is-link
+        />
 
         <!-- City List -->
         <template v-for="(cities, letter) in cityList" :key="letter">
@@ -117,7 +121,11 @@ const selectStore = (store: any) => {
         <template #title>
           <div class="store-nav-title">
             <span>当前城市: {{ city }}</span>
-            <van-button size="mini" type="primary" @click="switchToCitySelection">
+            <van-button
+              size="mini"
+              type="primary"
+              @click="switchToCitySelection"
+            >
               [切换]
             </van-button>
           </div>
@@ -159,7 +167,8 @@ const selectStore = (store: any) => {
   display: flex;
   flex-direction: column;
 }
-.city-selection-view, .store-list-view {
+.city-selection-view,
+.store-list-view {
   height: 100%;
   display: flex;
   flex-direction: column;
