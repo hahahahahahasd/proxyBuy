@@ -1,27 +1,34 @@
 <script setup lang="ts">
-import { useCartStore } from '@/stores/cart';
-import { useMerchantStore } from '@/stores/merchant';
-import { useRouter } from 'vue-router';
-import { showNotify } from 'vant';
-import type { SpecOption } from '@/stores/cart';
+import { useCartStore } from "@/stores/cart";
+import { useMerchantStore } from "@/stores/merchant";
+import { useRouter } from "vue-router";
+import { showNotify } from "vant";
+import type { SpecOption } from "@/stores/cart";
 
 const cartStore = useCartStore();
 const merchantStore = useMerchantStore();
 const router = useRouter();
 
 const formatSpecifications = (
-  selectedOptions: Record<string, SpecOption>,
+  selectedOptions: Record<string, SpecOption>
 ): string => {
   const specString = Object.values(selectedOptions)
     .map((opt) => opt.name)
-    .join(' / ');
-  return specString ? `规格: ${specString}` : '';
+    .join(" / ");
+  return specString ? `规格: ${specString}` : "";
 };
 
 const submitOrder = async () => {
   if (!merchantStore.selectedMerchant) {
-    showNotify({ type: 'danger', message: '请先选择一个门店' });
-    router.push('/store-selection');
+    showNotify({ type: "danger", message: "请先选择一个门店" });
+    router.push("/store-selection");
+    return;
+  }
+
+  const token = localStorage.getItem("token");
+  if (!token) {
+    showNotify({ type: "danger", message: "凭证无效" });
+    router.push("/invalid-credential");
     return;
   }
 
@@ -33,32 +40,40 @@ const submitOrder = async () => {
         ([specName, option]) => ({
           name: specName,
           option: option.name,
-        }),
+        })
       ),
-    }),
+    })
   );
 
   if (orderItems.length === 0) {
-    showNotify({ type: 'warning', message: '购物车是空的' });
+    showNotify({ type: "warning", message: "购物车是空的" });
     return;
   }
 
   try {
-    const response = await fetch('/api/orders', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch("/api/orders", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // 添加Token到请求头
+      },
       body: JSON.stringify({
-        merchantId: 1,
-        tableId: 1, // TODO: Use dynamic table ID
+        // merchantId 和 tableId 已被移除，后端会从Token中解析
         items: orderItems,
         storeName: merchantStore.selectedMerchant.name,
         storeAddress: merchantStore.selectedMerchant.address,
+        merchantId: 1,
+        tableId: 1,
       }),
     });
 
     const result = await response.json();
     if (!result.success) {
-      throw new Error(result.message || 'Order submission failed');
+      // 如果是401等认证错误，后端可能会返回特定的错误信息
+      if (response.status === 401) {
+        throw new Error("认证失败");
+      }
+      throw new Error(result.message || "Order submission failed");
     }
 
     const orderId = result.data.id;
@@ -66,9 +81,9 @@ const submitOrder = async () => {
 
     // Redirect to the new order detail page
     router.push(`/order/${orderId}`);
-  } catch (error) {
-    console.error('Failed to submit order:', error);
-    showNotify({ type: 'danger', message: '下单失败' });
+  } catch (error: any) {
+    console.error("Failed to submit order:", error);
+    showNotify({ type: "danger", message: error.message || "下单失败" });
   }
 };
 </script>
@@ -92,7 +107,7 @@ const submitOrder = async () => {
                   cartItem.item.price +
                   Object.values(cartItem.selectedOptions).reduce(
                     (sum, opt) => sum + (opt.priceChange || 0),
-                    0,
+                    0
                   )
                 ).toFixed(2)
               }}

@@ -36,6 +36,22 @@ import {
 // 2. 引入 Vant 全局样式
 import 'vant/lib/index.css';
 
+// --- 新增：从 URL 获取 Token ---
+// 在 Vue 应用初始化之前，检查 URL 中是否有 token 参数
+const urlParams = new URLSearchParams(window.location.search);
+const token = urlParams.get('token');
+
+if (token) {
+  // 如果存在，则将其保存到 localStorage
+  localStorage.setItem('token', token);
+
+  // 为了安全和美观，从 URL 中移除 token 参数，避免被用户收藏或分享
+  // 使用 replaceState 不会触发页面刷新
+  const newUrl = `${window.location.pathname}${window.location.hash}`;
+  window.history.replaceState({}, document.title, newUrl);
+}
+// --- 结束新增逻辑 ---
+
 const app = createApp(App)
 
 // 3. 注册你需要的 Vant 组件

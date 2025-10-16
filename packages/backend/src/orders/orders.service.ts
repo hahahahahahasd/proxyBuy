@@ -45,9 +45,31 @@ export class OrdersService {
 
   // --- 顾客端方法 ---
 
-  async createOrderForCustomer(createOrderDto: CreateOrderDto) {
+  // --- 顾客端方法 ---
+
+  async createOrderForCustomer(orderPayload: {
+    merchantId: number;
+    tableId: number;
+    items: {
+      menuItemId: number;
+      quantity: number;
+      selectedSpecifications?: any[];
+    }[];
+    storeName: string;
+    storeAddress: string;
+  }) {
     const { merchantId, tableId, items, storeName, storeAddress } =
-      createOrderDto;
+      orderPayload;
+
+    // 1. 验证桌号是否存在
+    const table = await this.prisma.table.findUnique({
+      where: { id: tableId, merchantId: merchantId },
+    });
+    if (!table) {
+      throw new NotFoundException(
+        `ID为 ${tableId} 且属于该商户的桌号不存在。`,
+      );
+    }
 
     const menuItemIds = items.map((item) => item.menuItemId);
     const menuItems = await this.prisma.menuItem.findMany({

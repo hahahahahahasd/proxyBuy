@@ -15,7 +15,6 @@ class SocketService {
     if (!this.socket) {
       // 在开发环境中，我们明确指向后端服务的地址
       // 在生产环境中，可以留空，它会自动使用当前页面的主机
-      const socketUrl = import.meta.env.DEV || '';
       this.socket = io({
         transports: ['websocket'],
         autoConnect: false, // 我们将手动控制连接

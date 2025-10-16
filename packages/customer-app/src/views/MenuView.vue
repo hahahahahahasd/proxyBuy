@@ -225,7 +225,7 @@ onMounted(() => {
         </div>
         <div class="spec-footer">
           <div class="price">¥{{ specPopupPrice.toFixed(2) }}</div>
-          <van-stepper v-model="specQuantity" min="1" />
+          <van-stepper v-model="specQuantity" min="1" max="1" />
         </div>
         <van-button type="primary" block @click="handleAddToCart"
           >加入购物车</van-button

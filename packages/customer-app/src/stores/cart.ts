@@ -45,21 +45,27 @@ export const useCartStore = defineStore('cart', () => {
   })
 
   // 添加或更新购物车项
-  function addOrUpdateItem(item: MenuItem, selectedOptions: Record<string, SpecOption>, quantity: number) {
+  function addOrUpdateItem(item: MenuItem, selectedOptions: Record<string, SpecOption>) {
     const cartItemId = generateCartItemId(item.id, selectedOptions);
     
+    // 如果点击的商品和购物车里的是同一个，则不做任何事
     if (items.value[cartItemId]) {
-      items.value[cartItemId].quantity += quantity;
-    } else {
-      items.value[cartItemId] = { item, selectedOptions, quantity };
+      return; 
     }
+    
+    // 如果是新商品，则先清空购物车
+    clearCart();
+    
+    // 然后将新商品以数量为 1 添加到购物车
+    items.value[cartItemId] = { item, selectedOptions, quantity: 1 };
   }
 
   // 直接更新购物车中某一项的数量
   function updateItemQuantity(cartItemId: string, quantity: number) {
     if (items.value[cartItemId]) {
       if (quantity > 0) {
-        items.value[cartItemId].quantity = quantity;
+        // 确保更新数量时也不会超过1
+        items.value[cartItemId].quantity = 1;
       } else {
         delete items.value[cartItemId];
       }
