@@ -1,7 +1,7 @@
-import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { GenerateTokenDto } from './dto/generate-token.dto';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from './jwt-auth.guard';
 
 @ApiTags('[公共] 1. 认证')
@@ -19,14 +19,16 @@ export class AuthController {
     return { success: true, data: token };
   }
 
-  @Get('validate')
+  @Get('profile')
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({
-    summary: '验证Token是否有效',
-    description: '这是一个受保护的路由，用于检查请求头中的Token是否有效。',
+    summary: '验证Token并获取用户信息',
+    description:
+      '这是一个受保护的路由。如果Token有效，它将返回Token中编码的用户信息（如merchantId, tableId）。',
   })
-  validateToken() {
-    // 因为 JwtAuthGuard 已经通过，说明 token 是有效的
-    return { success: true, message: 'Token is valid.' };
+  getProfile(@Request() req) {
+    // JwtAuthGuard 会验证Token，并将解析后的payload附加到请求的 `user` 对象上。
+    return { success: true, data: req.user };
   }
 }
