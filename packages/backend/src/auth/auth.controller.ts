@@ -25,10 +25,11 @@ export class AuthController {
   @ApiOperation({
     summary: '验证Token并获取用户信息',
     description:
-      '这是一个受保护的路由。如果Token有效，它将返回Token中编码的用户信息（如merchantId, tableId）。',
+      '这是一个受保护的路由。如果Token有效，它将返回Token中编码的用户信息（如merchantId, tableId）以及当前桌位是否存在有效订单ID。',
   })
-  getProfile(@Request() req) {
-    // JwtAuthGuard 会验证Token，并将解析后的payload附加到请求的 `user` 对象上。
-    return { success: true, data: req.user };
+  async getProfile(@Request() req) {
+    // 调用新的service方法来包含有效订单检查
+    const profileData = await this.authService.validateAndGetProfile(req.user);
+    return { success: true, data: profileData };
   }
 }

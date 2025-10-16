@@ -1,10 +1,27 @@
 <script setup lang="ts">
+import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { Button as VanButton, Icon as VanIcon } from 'vant';
+import { useAuthStore } from '@/stores/auth';
 
 const router = useRouter();
+const authStore = useAuthStore();
+
+// 在组件挂载后执行
+onMounted(() => {
+  // 检查是否存在有效订单ID
+  const activeOrderId = authStore.user?.activeOrderId;
+  if (activeOrderId) {
+    // 如果存在，则直接跳转到该订单的详情页
+    router.replace({ 
+      name: 'order-detail', 
+      params: { id: activeOrderId } 
+    });
+  }
+});
 
 const goToMenu = () => {
+  // 如果没有有效订单，则按正常流程进入店铺选择页
   router.push('/store-selection');
 };
 </script>

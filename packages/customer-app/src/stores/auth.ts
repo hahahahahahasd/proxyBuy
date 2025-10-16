@@ -8,6 +8,7 @@ export interface UserProfile {
   tableId: number;
   iat: number;
   exp: number;
+  activeOrderId?: number; // 新增：可选的有效订单ID
 }
 
 export const useAuthStore = defineStore('auth', () => {
