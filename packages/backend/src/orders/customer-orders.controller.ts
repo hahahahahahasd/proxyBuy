@@ -7,40 +7,60 @@ import {
   ParseIntPipe,
   UseGuards,
   Request,
+  NotFoundException,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
-import { CreateOrderDto } from './dto/create-order.dto';
+import { CreateCustomerOrderDto } from './dto/create-customer-order.dto';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @ApiTags('[顾客端] 2. 订单')
 @Controller('orders')
 export class CustomerOrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(private readonly ordersService: OrdersService) { }
+
+  @Get('active/session')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: '获取当前会话的活动订单 (需要Token)' })
+  @ApiBearerAuth()
+  async getActiveOrderForSession(@Request() req) {
+    const { merchantId, sessionId } = req.user;
+    const order = await this.ordersService.findActiveOrderBySession(
+      merchantId,
+      sessionId,
+    );
+    // 无论是否找到订单，都返回成功的统一结构
+    // 如果没有活动订单，data 将为 null，前端可以据此判断
+    return { success: true, data: order };
+  }
 
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: '创建新订单 (需要Token)' })
-  @ApiBearerAuth() // 在Swagger UI中显示认证输入框
-  async createOrder(@Request() req, @Body() createOrderDto: CreateOrderDto) {
-    // 从经过验证的Token payload中获取merchantId和tableId
-    const { merchantId, tableId } = req.user;
-
-    // 将验证过的信息和订单数据一起传递给服务层
-    const orderPayload = {
-      ...createOrderDto,
+  @ApiBearerAuth()
+  async createOrder(
+    @Request() req,
+    @Body() createCustomerOrderDto: CreateCustomerOrderDto,
+  ) {
+    const { merchantId, sessionId } = req.user;
+    const order = await this.ordersService.createOrderForCustomer(
+      createCustomerOrderDto,
       merchantId,
-      tableId,
-    };
-
-    const order = await this.ordersService.createOrderForCustomer(orderPayload);
+      sessionId,
+    );
     return { success: true, data: order };
   }
 
   @Get(':id')
-  @ApiOperation({ summary: '获取单个订单详情' })
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    const order = await this.ordersService.getOrderByIdForCustomer(id);
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: '获取单个订单详情 (需要Token, 校验Session)' })
+  @ApiBearerAuth()
+  async findOne(@Request() req, @Param('id', ParseIntPipe) id: number) {
+    const { sessionId } = req.user;
+    const order = await this.ordersService.getOrderByIdForCustomer(
+      id,
+      sessionId,
+    );
     return { success: true, data: order };
   }
 

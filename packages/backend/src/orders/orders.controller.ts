@@ -19,7 +19,9 @@ export class OrdersController {
 
   @Post()
   create(@Body() createOrderDto: CreateOrderDto) {
-    return this.ordersService.create(createOrderDto);
+    // DTO validation now ensures sessionId is present and is a string.
+    const { merchantId, sessionId } = createOrderDto;
+    return this.ordersService.create(createOrderDto, merchantId, sessionId);
   }
 
   @Get('merchant/:merchantId')

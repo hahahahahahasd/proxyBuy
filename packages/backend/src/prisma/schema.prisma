@@ -17,19 +17,7 @@ model Merchant {
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
   menuItems MenuItem[]
-  tables    Table[]
   orders    Order[]
-}
-
-// 餐桌模型
-model Table {
-  id         Int      @id @default(autoincrement())
-  name       String // 桌号，如 "A1", "吧台座-3"
-  merchantId Int
-  merchant   Merchant @relation(fields: [merchantId], references: [id])
-  orders     Order[]
-
-  @@unique([merchantId, name]) // 同一个商户下的桌号不能重复
 }
 
 // 菜单项模型
@@ -77,16 +65,14 @@ enum OrderStatus {
 
 // 订单模型
 model Order {
-  id         Int         @id @default(autoincrement())
-  totalPrice Float
-  status     OrderStatus @default(AWAITING_PAYMENT) // 默认状态改为待支付
-  createdAt  DateTime    @default(now())
-  merchantId Int
-  merchant   Merchant    @relation(fields: [merchantId], references: [id])
-  tableId    Int
-  table      Table       @relation(fields: [tableId], references: [id])
-  items      OrderItem[]
-
+  id           Int         @id @default(autoincrement())
+  totalPrice   Float
+  status       OrderStatus @default(AWAITING_PAYMENT) // 默认状态改为待支付
+  createdAt    DateTime    @default(now())
+  merchantId   Int
+  merchant     Merchant    @relation(fields: [merchantId], references: [id])
+  items        OrderItem[]
+  sessionId    String? // 新增加 sessionId 字段
   assigneeId   Int? // 领取订单的员工ID
   assigneeName String? // 领取订单的员工姓名
 
@@ -95,6 +81,7 @@ model Order {
 
   storeName    String
   storeAddress String
+
 }
 
 // 订单项模型（连接订单和菜单项）

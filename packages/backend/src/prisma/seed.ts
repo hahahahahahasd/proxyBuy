@@ -9,9 +9,6 @@ async function main() {
   const merchant1 = await prisma.merchant.create({
     data: {
       name: '深夜拉面馆',
-      tables: {
-        create: [{ name: 'A1' }, { name: 'A2' }, { name: '吧台-3' }],
-      },
       menuItems: {
         create: [
           { name: '豚骨拉面', price: 48.5, description: '浓郁的猪骨汤底' },

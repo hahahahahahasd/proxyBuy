@@ -7,7 +7,7 @@ import { OrderStatus } from '@prisma/client';
 // 定义JWT payload的接口
 interface JwtPayload {
   merchantId: number;
-  tableId: number;
+  sessionId: string;
   type: string;
 }
 
@@ -20,7 +20,7 @@ export class AuthService {
 
   /**
    * 为顾客生成一个访问令牌
-   * @param generateTokenDto 包含 merchantId 和 tableId
+   * @param generateTokenDto 包含 merchantId 和 sessionId
    * @returns 返回生成的 accessToken
    */
   async generateCustomerToken(
@@ -28,7 +28,7 @@ export class AuthService {
   ): Promise<{ accessToken: string }> {
     const payload = {
       merchantId: generateTokenDto.merchantId,
-      tableId: generateTokenDto.tableId,
+      sessionId: generateTokenDto.sessionId,
       type: 'customer', // 标记这是顾客的token
     };
     const accessToken = this.jwtService.sign(payload);
@@ -41,13 +41,13 @@ export class AuthService {
    * @returns 返回用户信息以及可能存在的有效订单ID
    */
   async validateAndGetProfile(payload: JwtPayload) {
-    const { merchantId, tableId } = payload;
+    const { merchantId, sessionId } = payload;
 
-    // 查找该桌号下是否有状态为 RECEIVED 或 PREPARING 的订单
+    // 查找该会话下是否有状态为 RECEIVED 或 PREPARING 的订单
     const activeOrder = await this.prisma.order.findFirst({
       where: {
         merchantId,
-        tableId,
+        sessionId,
         status: {
           in: [OrderStatus.RECEIVED, OrderStatus.PREPARING],
         },
@@ -58,7 +58,9 @@ export class AuthService {
     });
 
     return {
-      ...payload,
+      merchantId,
+      sessionId,
+      type: payload.type,
       activeOrderId: activeOrder ? activeOrder.id : null,
     };
   }

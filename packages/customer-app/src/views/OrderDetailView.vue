@@ -4,10 +4,12 @@ import { useRoute, useRouter } from "vue-router";
 import { showNotify } from "vant";
 import { socketService } from "@/services/socketService";
 import QrcodeVue from "qrcode.vue";
+import { useAuthStore } from "@/stores/auth";
 
 // --- Component Props and State ---
 const props = defineProps<{ id: string }>();
 const router = useRouter();
+const authStore = useAuthStore();
 
 const order = ref<any>(null);
 const isLoading = ref(true);
@@ -63,8 +65,19 @@ const fetchClaimDetails = async (orderId: number) => {
 
 const fetchOrderDetails = async () => {
   isLoading.value = true;
+  const token = authStore.token;
+  if (!token) {
+    // showNotify({ type: "danger", message: "请先登录" });
+    router.push("/invalid-credential");
+    return;
+  }
+
   try {
-    const response = await fetch(`/api/orders/${props.id}`);
+    const response = await fetch(`/api/orders/${props.id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     const result = await response.json();
     if (result.success) {
       if (result.data.status === "CLOSED") {

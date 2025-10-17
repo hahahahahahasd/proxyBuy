@@ -15,7 +15,7 @@ import { AuthModule } from './auth/auth.module';
     PrismaModule,
     OrdersModule,
     MerchantsModule,
-    StoresModule, // <-- 在这里添加 StoresModule
+    StoresModule,
     AuthModule,
   ],
   controllers: [],

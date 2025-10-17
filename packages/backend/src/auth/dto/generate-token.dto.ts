@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class GenerateTokenDto {
   @ApiProperty({ description: '商户ID', example: 1 })
@@ -7,8 +7,11 @@ export class GenerateTokenDto {
   @IsNumber()
   merchantId: number;
 
-  @ApiProperty({ description: '桌号ID', example: 5 })
+  @ApiProperty({
+    description: '会话ID (例如, 从一次性URL中提取的唯一标识)',
+    example: 'session_abc123',
+  })
   @IsNotEmpty()
-  @IsNumber()
-  tableId: number;
+  @IsString()
+  sessionId: string;
 }

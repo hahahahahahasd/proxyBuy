@@ -4,10 +4,10 @@ import {
   IsInt,
   IsNotEmpty,
   IsOptional,
-  IsString,
   ValidateNested,
 } from 'class-validator';
 
+// 定义嵌套的 DTO
 class OrderItemDto {
   @IsInt()
   menuItemId: number;
@@ -21,17 +21,10 @@ class OrderItemDto {
 }
 
 /**
- * 用于通用或内部创建订单的 DTO。
- * 需要在请求体中明确提供 merchantId 和 sessionId。
+ * 专用于顾客端创建订单的 DTO。
+ * merchantId 和 sessionId 将从 JWT Token 中解析，因此不包含在此 DTO 中。
  */
-export class CreateOrderDto {
-  @IsInt()
-  merchantId: number;
-
-  @IsString()
-  @IsNotEmpty()
-  sessionId: string;
-
+export class CreateCustomerOrderDto {
   @IsInt()
   tableId: number;
 

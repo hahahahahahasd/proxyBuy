@@ -58,12 +58,12 @@ const submitOrder = async () => {
         Authorization: `Bearer ${token}`, // 添加Token到请求头
       },
       body: JSON.stringify({
-        // merchantId 和 tableId 已被移除，后端会从Token中解析
+        // 后端会从Token中解析 merchantId 和 sessionId
         items: orderItems,
         storeName: merchantStore.selectedMerchant.name,
         storeAddress: merchantStore.selectedMerchant.address,
-        merchantId: 1,
-        tableId: 1,
+        tableId: 1, // 暂时硬编码桌号
+        merchantId: 1, // 暂时硬编码商户ID
       }),
     });
 
