@@ -7,6 +7,7 @@ KEYS=(
   "AIzaSyDPxZ2weHNMc2gYOHiZ9iZOjSqz2ZS3H_s"
   "AIzaSyAyQoAoZz8RABcZW5bAufmIX_MvWWCOXyM"
   "AIzaSyCnzW9Z_65y2RsbQrW_T9boa_91uO6Eea0"
+  "AIzaSyALM3QM5D7JfcW-ZRUrGlDH-vj_LFfZFDk"
   # 如果有更多 Key，請繼續往下加
 )
 # ------------------------------------
