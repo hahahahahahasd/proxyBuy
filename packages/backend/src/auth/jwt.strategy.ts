@@ -22,7 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     // 但对于当前场景，直接返回payload就足够了
     return {
       merchantId: payload.merchantId,
-      tableId: payload.tableId,
+      sessionId: payload.sessionId, // 修正：使用 sessionId
       type: payload.type,
     };
   }

@@ -29,11 +29,6 @@ export class OrdersController {
     return this.ordersService.findAllForMerchant(merchantId);
   }
 
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.ordersService.findOne(id);
-  }
-
   @Post(':id/pay')
   @HttpCode(HttpStatus.OK)
   simulatePayment(@Param('id', ParseIntPipe) id: number) {
