@@ -11,11 +11,11 @@ async function main() {
       name: '深夜拉面馆',
       menuItems: {
         create: [
-          { name: '豚骨拉面', price: 48.5, description: '浓郁的猪骨汤底' },
-          { name: '酱油拉面', price: 45, isAvailable: true },
+          { name: '标准美式', price: 48.5, description: '浓郁的猪骨汤底' },
+          { name: '加浓美式', price: 45, isAvailable: true },
           { name: '日式炸鸡', price: 28, isAvailable: true },
           { name: '朝日啤酒', price: 15, isAvailable: true },
-          { name: '可乐', price: 8, isAvailable: false },
+          { name: '可乐', price: 8, },
         ],
       },
     },

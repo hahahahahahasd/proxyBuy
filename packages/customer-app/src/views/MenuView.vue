@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
-import { useCartStore } from '@/stores/cart';
-import { useMerchantStore } from '@/stores/merchant'; // Import the new store
-import type { MenuItem, Specification, SpecOption } from '@/types';
-import { useRouter } from 'vue-router';
-import { showNotify } from 'vant';
+import { ref, onMounted, computed } from "vue";
+import { useCartStore } from "@/stores/cart";
+import { useMerchantStore } from "@/stores/merchant"; // Import the new store
+import type { MenuItem, Specification, SpecOption } from "@/types";
+import { useRouter } from "vue-router";
+import { showNotify } from "vant";
 
 // --- Stores and Router ---
 const cartStore = useCartStore();
@@ -25,10 +25,11 @@ const showSpecPopup = ref(false);
 const currentItem = ref<MenuItem | null>(null);
 const selectedSpecs = ref<Record<string, SpecOption>>({});
 const specQuantity = ref(1);
+const showZeroYuanDiscount = ref(true); // 新增：0元购活动标识
 
 // --- Computed Properties ---
 const selectedMerchantName = computed(
-  () => merchantStore.selectedMerchant?.name || '请选择门店',
+  () => merchantStore.selectedMerchant?.name || "请选择门店"
 );
 
 const specPopupPrice = computed(() => {
@@ -36,7 +37,7 @@ const specPopupPrice = computed(() => {
   const basePrice = currentItem.value.price;
   const optionsPrice = Object.values(selectedSpecs.value).reduce(
     (sum, opt) => sum + (opt.priceChange || 0),
-    0,
+    0
   );
   return basePrice + optionsPrice;
 });
@@ -44,7 +45,7 @@ const specPopupPrice = computed(() => {
 // --- Methods ---
 const fetchData = async () => {
   if (!merchantStore.selectedMerchant?.id) {
-    showNotify({ type: 'warning', message: '未选择门店，无法加载菜单' });
+    showNotify({ type: "warning", message: "未选择门店，无法加载菜单" });
     isLoading.value = false;
     return;
   }
@@ -59,12 +60,12 @@ const fetchData = async () => {
     if (result.success) {
       categories.value = result.data;
     } else {
-      throw new Error(result.message || '获取菜单数据失败');
+      throw new Error(result.message || "获取菜单数据失败");
     }
   } catch (error: any) {
-    console.error('加载菜单时出错:', error);
+    console.error("加载菜单时出错:", error);
     // 将后端的具体错误信息展示给用户，更利于调试
-    showNotify({ type: 'danger', message: error.message || '菜单加载失败' });
+    showNotify({ type: "danger", message: error.message || "菜单加载失败" });
   } finally {
     isLoading.value = false;
   }
@@ -91,20 +92,20 @@ const handleAddToCart = () => {
     cartStore.addOrUpdateItem(
       currentItem.value,
       selectedSpecs.value,
-      specQuantity.value,
+      specQuantity.value
     );
     showSpecPopup.value = false;
-    showNotify({ type: 'success', message: '已加入购物车' });
+    showNotify({ type: "success", message: "已加入购物车" });
   }
 };
 
 const addSimpleItemToCart = (item: MenuItem) => {
   cartStore.addOrUpdateItem(item, {}, 1);
-  showNotify({ type: 'success', message: '已加入购物车' });
+  showNotify({ type: "success", message: "已加入购物车" });
 };
 
-const goToCheckout = () => router.push('/checkout');
-const goToStoreSelection = () => router.push('/store-selection');
+const goToCheckout = () => router.push("/checkout");
+const goToStoreSelection = () => router.push("/store-selection");
 
 // --- Lifecycle Hooks ---
 onMounted(() => {
@@ -156,7 +157,19 @@ onMounted(() => {
             :thumb="item.imageUrl || 'https://img.yzcdn.cn/vant/ipad.jpeg'"
           >
             <template #price>
-              <div class="price-container">
+              <!-- 0元购活动开启 -->
+              <div v-if="showZeroYuanDiscount" class="price-container">
+                <span
+                  class="current-price"
+                  style="color: red; font-weight: bold"
+                  >¥0.00</span
+                >
+                <span class="original-price">
+                  ¥{{ item.price.toFixed(2) }}
+                </span>
+              </div>
+              <!-- 默认价格显示 -->
+              <div v-else class="price-container">
                 <span class="current-price">¥{{ item.price.toFixed(2) }}</span>
                 <span
                   v-if="item.originalPrice && item.originalPrice > item.price"
