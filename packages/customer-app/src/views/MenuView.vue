@@ -25,12 +25,15 @@ const showSpecPopup = ref(false);
 const currentItem = ref<MenuItem | null>(null);
 const selectedSpecs = ref<Record<string, SpecOption>>({});
 const specQuantity = ref(1);
-const showZeroYuanDiscount = ref(true); // 新增：0元购活动标识
+// const showZeroYuanDiscount = ref(true); // 已废弃：改为从 cartStore 中获取
 
 // --- Computed Properties ---
 const selectedMerchantName = computed(
   () => merchantStore.selectedMerchant?.name || "请选择门店"
 );
+
+// 新增：从 cartStore 中获取0元购状态
+const showZeroYuanDiscount = computed(() => cartStore.showZeroYuanDiscount);
 
 const specPopupPrice = computed(() => {
   if (!currentItem.value) return 0;
@@ -109,6 +112,9 @@ const goToStoreSelection = () => router.push("/store-selection");
 
 // --- Lifecycle Hooks ---
 onMounted(() => {
+  // 为了演示，在此处激活0元购模式。实际应用中，这可能由其他逻辑（如API调用）触发。
+  cartStore.setZeroYuanDiscount(true); 
+  
   cartStore.clearCart();
   fetchData();
 });

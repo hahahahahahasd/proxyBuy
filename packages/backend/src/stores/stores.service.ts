@@ -48,9 +48,12 @@ export class StoresService {
       throw new InternalServerErrorException('地图服务未正确配置');
     }
 
+    const baseKeywords = '瑞幸咖啡';
+    const finalKeywords = keywords ? `${baseKeywords} ${keywords}` : baseKeywords;
+
     const requestParams = {
       key: this.apiKey,
-      keywords: keywords || '瑞幸咖啡',
+      keywords: finalKeywords,
       city: city,
       offset: 25,
       page: 1,

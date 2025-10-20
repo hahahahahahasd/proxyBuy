@@ -29,20 +29,35 @@ const generateCartItemId = (itemId: number, selectedOptions: Record<string, Spec
 
 
 export const useCartStore = defineStore('cart', () => {
-  // 购物车 items 的结构变为 Record<string, CartItem>
+  // --- State ---
   const items = ref<Record<string, CartItem>>({})
+  const showZeroYuanDiscount = ref(false); // 新增：0元购活动标识
 
+  // --- Getters ---
   const totalItems = computed(() => {
     return Object.values(items.value).reduce((sum, cartItem) => sum + cartItem.quantity, 0)
   })
 
   const totalPrice = computed(() => {
+    // 如果0元购活动开启，总价直接返回0
+    if (showZeroYuanDiscount.value) {
+      return 0;
+    }
+    // 否则，正常计算总价
     return Object.values(items.value).reduce((sum, cartItem) => {
       const optionsPrice = Object.values(cartItem.selectedOptions).reduce((s, opt) => s + (opt.priceChange || 0), 0);
       const itemTotalPrice = (cartItem.item.price + optionsPrice) * cartItem.quantity;
       return sum + itemTotalPrice;
     }, 0)
   })
+
+  // --- Actions ---
+
+  // 设置0元购活动状态
+  function setZeroYuanDiscount(isActive: boolean) {
+    showZeroYuanDiscount.value = isActive;
+  }
+
 
   // 添加或更新购物车项
   function addOrUpdateItem(item: MenuItem, selectedOptions: Record<string, SpecOption>) {
@@ -80,8 +95,10 @@ export const useCartStore = defineStore('cart', () => {
     items,
     totalItems,
     totalPrice,
+    showZeroYuanDiscount, // 导出状态
     addOrUpdateItem,
     updateItemQuantity,
     clearCart,
+    setZeroYuanDiscount, // 导出方法
   }
 })

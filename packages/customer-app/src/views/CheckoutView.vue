@@ -101,7 +101,21 @@ const submitOrder = async () => {
         >
           <template #label>
             <div>{{ formatSpecifications(cartItem.selectedOptions) }}</div>
-            <div>
+            <!-- 0元购活动开启时，单价显示为0 -->
+            <div v-if="cartStore.showZeroYuanDiscount">
+              单价: <span style="text-decoration: line-through;">¥{{
+                (
+                  cartItem.item.price +
+                  Object.values(cartItem.selectedOptions).reduce(
+                    (sum, opt) => sum + (opt.priceChange || 0),
+                    0
+                  )
+                ).toFixed(2)
+              }}</span>
+              <span style="color: red; font-weight: bold; margin-left: 5px;">¥0.00</span>
+            </div>
+            <!-- 默认单价显示 -->
+            <div v-else>
               单价: ¥{{
                 (
                   cartItem.item.price +
