@@ -1,7 +1,8 @@
 import { API_BASE_URL } from '@/config';
 import { useAuthStore } from '@/stores/auth';
+import type { Order } from '@/types';
 
-export async function fetchActiveOrder() {
+export async function fetchActiveOrder(): Promise<Order | null> {
   const authStore = useAuthStore();
   const token = authStore.token;
 
@@ -15,14 +16,14 @@ export async function fetchActiveOrder() {
         Authorization: `Bearer ${token}`,
       },
     });
-    // console.log('response: ', response);
 
-    // if (response && response.ok) {
-    //   const order = await response.json();
-    //   return order;
-    // } else {
-    //   return null;
-    // }
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success && data.data) {
+        return data.data;
+      }
+    }
+    return null;
   } catch (error) {
     console.error('Failed to fetch active order:', error);
     return null;

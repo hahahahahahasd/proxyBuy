@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 
 // 模拟门店数据类型
 export interface Store {
@@ -20,7 +20,7 @@ export const useStoreSelectionStore = defineStore('store', () => {
   ]);
 
   // 当前选中的门店，默认为列表中的第一家
-  const selectedStore = ref<Store>(storeList.value[0]);
+  const selectedStore = ref<Store | null>(storeList.value[0] || null);
 
   // 根据关键词过滤门店列表
   const filteredStoreList = (keyword: string) => {

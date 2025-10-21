@@ -1,8 +1,10 @@
 # Use the official Nginx image from Docker Hub
 FROM nginx:alpine
 
-# Remove the default Nginx configuration file
-RUN rm /etc/nginx/conf.d/default.conf
+# Copy the built frontend assets into the Nginx HTML directory
+# IMPORTANT: You must build the frontend locally first!
+# Run: npm run build -w packages/customer-app
+COPY ./packages/customer-app/dist /usr/share/nginx/html
 
-# Copy our custom configuration file from the nginx directory
-COPY nginx/nginx.conf /etc/nginx/conf.d/
+# Copy our custom Nginx configuration
+COPY ./nginx/nginx.conf /etc/nginx/conf.d/default.conf

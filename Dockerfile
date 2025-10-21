@@ -1,39 +1,48 @@
-# --- STAGE 1: DEPS ---
-# 安装所有依赖，包括 devDependencies，用于后续的构建
-FROM node:18-bullseye AS deps
+# --- STAGE 1: Base Dependencies ---
+# Install dependencies for the entire monorepo (workspaces)
+FROM node:20-bullseye AS base
 WORKDIR /usr/src/app
-COPY packages/backend/package*.json ./
+COPY package.json package-lock.json ./
+# Copy package.json for both frontend and backend to ensure workspaces are detected
+COPY packages/backend/package.json ./packages/backend/
+COPY packages/customer-app/package.json ./packages/customer-app/
 RUN npm install --legacy-peer-deps
-RUN npm install @socket.io/redis-adapter redis
 
-
-
-# --- STAGE 2: BUILDER ---
-# 在这个阶段进行编译
-FROM node:18-bullseye AS builder
+# --- STAGE 2: Frontend Builder ---
+# Build the customer-app (Vue frontend)
+FROM base AS frontend-builder
 WORKDIR /usr/src/app
-# 从 deps 阶段拷贝完整的 node_modules
-COPY --from=deps /usr/src/app/node_modules ./node_modules
-# 拷贝所有源代码
-COPY packages/backend/ .
-# 运行 Prisma Generate 和 Build
-# 此时因为有完整的 node_modules，所有 TS 模块都能被找到
+# Copy frontend source code
+COPY packages/customer-app ./packages/customer-app
+# Build the frontend app
+RUN npm run build -w packages/customer-app
+
+# --- STAGE 3: Backend Builder ---
+# Build the NestJS backend
+FROM base AS backend-builder
+WORKDIR /usr/src/app
+# Copy backend source code and prisma schema
+COPY packages/backend ./packages/backend
+COPY packages/backend/src/prisma ./prisma
+# Generate Prisma client
 RUN npx prisma generate
-RUN npm run build
+# Build the backend app
+RUN npm run build -w packages/backend
 
-# --- STAGE 3: PRODUCTION ---
-# This is the final image that will be run, it will be much smaller
-FROM node:18-bullseye AS production
+# --- STAGE 4: Production ---
+# This is the final, lean image that will be run
+FROM node:20-bullseye AS production
 WORKDIR /usr/src/app
-# Copy production dependencies from deps stage
-COPY --from=deps /usr/src/app/package*.json ./
-COPY --from=deps /usr/src/app/node_modules ./node_modules
-# Copy the compiled code from the builder stage
-COPY --from=builder /usr/src/app/dist ./dist
+# Copy production dependencies from the base stage
+COPY --from=base /usr/src/app/package.json /usr/src/app/package-lock.json ./
+COPY --from=base /usr/src/app/packages/backend/package.json ./packages/backend/
+COPY --from=base /usr/src/app/node_modules ./node_modules
+# Copy the compiled backend code from the backend-builder stage
+COPY --from=backend-builder /usr/src/app/packages/backend/dist ./dist
 # The prisma schema file is needed at runtime
-COPY --from=builder /usr/src/app/src/prisma ./prisma
-# Copy static assets
-COPY public ./public
+COPY --from=backend-builder /usr/src/app/prisma ./prisma
+# Copy the built frontend assets from the frontend-builder stage into the public directory
+COPY --from=frontend-builder /usr/src/app/packages/customer-app/dist ./public
 # Copy entrypoint and wait-for-it scripts
 COPY ./entrypoint.sh ./
 COPY ./wait-for-it.sh ./

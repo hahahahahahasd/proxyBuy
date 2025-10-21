@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 import { showNotify } from "vant";
 import { socketService } from "@/services/socketService";
 import QrcodeVue from "qrcode.vue";
@@ -81,7 +81,7 @@ const fetchOrderDetails = async () => {
     const result = await response.json();
     if (result.success) {
       if (result.data.status === "CLOSED") {
-        showNotify({ type: "info", message: "该订单已关闭" });
+        showNotify({ type: "primary", message: "该订单已关闭" });
         router.push("/");
         return;
       }
@@ -133,7 +133,7 @@ const setupWebSocketListeners = () => {
         break;
 
       case "CLOSED":
-        showNotify({ type: "info", message: "订单已关闭" });
+        showNotify({ type: "primary", message: "订单已关闭" });
         socketService.disconnect();
         break;
     }
@@ -174,7 +174,7 @@ onUnmounted(() => {
             <div class="claim-code-label">取餐码</div>
             <div class="claim-code-value">{{ claimCode }}</div>
           </div>
-          <div class="qrcode-container">
+          <div class="qrcode-container" v-if="qrCodeData">
             <qrcode-vue :value="qrCodeData" :size="150" level="H" />
           </div>
         </div>

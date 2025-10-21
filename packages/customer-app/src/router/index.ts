@@ -46,7 +46,7 @@ const router = createRouter({
 });
 
 // 全局前置守卫: 实现智能路由跳转
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore();
 
   // 1. 尝试从 localStorage 恢复 token，以处理页面刷新
@@ -65,7 +65,7 @@ router.beforeEach(async (to, from, next) => {
       const activeOrder = await fetchActiveOrder();
       if (activeOrder && activeOrder.id) {
         // 发现活动订单，执行重定向
-        return next({ name: 'order-detail', params: { id: activeOrder.id } });
+        return next({ name: 'order-detail', params: { id: activeOrder.id.toString() } });
       }
     } catch (error) {
       console.error('检查活动订单时出错:', error);

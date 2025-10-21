@@ -53,6 +53,13 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  function setToken(newToken: string) {
+    token.value = newToken;
+    localStorage.setItem('customer_token', newToken);
+    axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+    isAuthenticated.value = true;
+  }
+
   /**
    * 登出
    */
@@ -60,7 +67,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated.value = false;
     user.value = null;
     token.value = null;
-    localStorage.removeItem('token');
+    localStorage.removeItem('customer_token');
     delete axios.defaults.headers.common['Authorization'];
   }
 
@@ -69,6 +76,7 @@ export const useAuthStore = defineStore('auth', () => {
     user,
     token,
     checkAuth,
+    setToken,
     logout,
   };
 });

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from "vue";
+import { ref, watch, computed } from "vue";
 import { useRouter } from "vue-router";
-import { showNotify, IndexBar, IndexAnchor, Cell } from "vant";
+import { showNotify } from "vant";
 import { useMerchantStore } from "@/stores/merchant";
 import { useDebounceFn } from "@vueuse/core";
 import { areaList } from "@/data/area";
@@ -23,18 +23,24 @@ const cityList = computed(() => {
   const groupedCities: { [key: string]: string[] } = {};
 
   cities.forEach((cityName) => {
-    const firstLetter = pinyin(cityName, { pattern: "first" })[0].toUpperCase();
-    if (!groupedCities[firstLetter]) {
-      groupedCities[firstLetter] = [];
+    const pinyinResult = pinyin(cityName, { pattern: "first" });
+    if (pinyinResult && pinyinResult.length > 0) {
+      const firstLetter = pinyinResult[0]!.toUpperCase();
+      if (!groupedCities[firstLetter]) {
+        groupedCities[firstLetter] = [];
+      }
+      groupedCities[firstLetter]?.push(cityName);
     }
-    groupedCities[firstLetter].push(cityName);
   });
 
   // Sort keys alphabetically
   return Object.keys(groupedCities)
     .sort()
     .reduce((acc, key) => {
-      acc[key] = groupedCities[key].sort((a, b) => a.localeCompare(b, "zh-CN"));
+      const cityGroup = groupedCities[key];
+      if (cityGroup) {
+        acc[key] = cityGroup.sort((a, b) => a.localeCompare(b, "zh-CN"));
+      }
       return acc;
     }, {} as { [key: string]: string[] });
 });

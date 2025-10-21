@@ -2,7 +2,7 @@
 import { ref, onMounted, computed } from "vue";
 import { useCartStore } from "@/stores/cart";
 import { useMerchantStore } from "@/stores/merchant"; // Import the new store
-import type { MenuItem, Specification, SpecOption } from "@/types";
+import type { MenuItem, SpecOption } from "@/types";
 import { useRouter } from "vue-router";
 import { showNotify } from "vant";
 
@@ -78,7 +78,7 @@ const openSpecPopup = (item: MenuItem) => {
   currentItem.value = item;
   selectedSpecs.value = {};
   item.specifications?.forEach((spec) => {
-    if (spec.options && spec.options.length > 0) {
+    if (spec.options && spec.options.length > 0 && spec.options[0]) {
       selectedSpecs.value[spec.name] = spec.options[0];
     }
   });
@@ -94,8 +94,7 @@ const handleAddToCart = () => {
   if (currentItem.value) {
     cartStore.addOrUpdateItem(
       currentItem.value,
-      selectedSpecs.value,
-      specQuantity.value
+      selectedSpecs.value
     );
     showSpecPopup.value = false;
     showNotify({ type: "success", message: "已加入购物车" });
@@ -103,7 +102,7 @@ const handleAddToCart = () => {
 };
 
 const addSimpleItemToCart = (item: MenuItem) => {
-  cartStore.addOrUpdateItem(item, {}, 1);
+  cartStore.addOrUpdateItem(item, {});
   showNotify({ type: "success", message: "已加入购物车" });
 };
 
