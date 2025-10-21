@@ -16,6 +16,7 @@ class SocketService {
       // 在开发环境中，我们明确指向后端服务的地址
       // 在生产环境中，可以留空，它会自动使用当前页面的主机
       this.socket = io({
+        path: '/socket.io/', // 明确指定 WebSocket 连接路径
         transports: ['websocket'],
         autoConnect: false, // 我们将手动控制连接
       });
