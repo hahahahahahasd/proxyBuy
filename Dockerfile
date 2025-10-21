@@ -15,6 +15,7 @@ WORKDIR /usr/src/app
 # Copy frontend source code
 COPY packages/customer-app ./packages/customer-app
 # Build the frontend app
+# Force rebuild by adding a comment with a timestamp: 2025-10-21 08:30:17
 RUN npm run build -w packages/customer-app
 
 # --- STAGE 3: Backend Builder ---

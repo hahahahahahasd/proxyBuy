@@ -30,8 +30,8 @@
         />
       </svg>
     </div>
-    <h1>凭证无效</h1>
-    <p>您的访问凭证无效或已过期<br />请重新扫码或联系商家。</p>
+    <h1>凭证无效2</h1>
+    <p>您的访问凭证无效或已过期<br />请重新联系商家。</p>
     <!-- <van-button type="primary" class="retry-btn" @click="$router.replace('/')"
       >返回首页</van-button
     > -->

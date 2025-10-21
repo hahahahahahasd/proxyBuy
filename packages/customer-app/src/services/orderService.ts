@@ -1,31 +1,29 @@
-import { API_BASE_URL } from '@/config';
+import axios from 'axios';
 import { useAuthStore } from '@/stores/auth';
 import type { Order } from '@/types';
 
 export async function fetchActiveOrder(): Promise<Order | null> {
   const authStore = useAuthStore();
-  const token = authStore.token;
 
-  if (!token) {
+  if (!authStore.isAuthenticated) {
     return null;
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/orders/active/session`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    // 使用全局配置的 axios 实例，它已经包含了 token 和正确的相对路径
+    const response = await axios.get('/api/orders/active/session');
 
-    if (response.ok) {
-      const data = await response.json();
-      if (data.success && data.data) {
-        return data.data;
-      }
+    if (response.data && response.data.success && response.data.data) {
+      return response.data.data;
     }
+    
     return null;
   } catch (error) {
     console.error('Failed to fetch active order:', error);
+    // 如果错误是 401 或 403 (认证失败)，则自动登出
+    if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
+      authStore.logout();
+    }
     return null;
   }
 }
