@@ -6,6 +6,7 @@ import { useMerchantStore } from "@/stores/merchant";
 import { useDebounceFn } from "@vueuse/core";
 import { areaList } from "@/data/area";
 import { pinyin } from "pinyin-pro";
+import axios from "axios";
 
 const router = useRouter();
 const merchantStore = useMerchantStore();
@@ -63,10 +64,10 @@ const fetchStores = async () => {
   isLoading.value = true;
   try {
     const keywords = `瑞幸咖啡 ${searchQuery.value}`.trim();
-    const response = await fetch(
+    const response = await axios.get(
       `/api/stores/search?city=${city.value}&keywords=${keywords}`
     );
-    const result = await response.json();
+    const result = response.data;
     if (result.success) {
       stores.value = result.data;
     } else {

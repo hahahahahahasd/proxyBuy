@@ -5,6 +5,7 @@ import { showNotify } from "vant";
 import { socketService } from "@/services/socketService";
 import QrcodeVue from "qrcode.vue";
 import { useAuthStore } from "@/stores/auth";
+import axios from 'axios';
 
 // --- Component Props and State ---
 const props = defineProps<{ id: string }>();
@@ -48,9 +49,8 @@ const formatStatus = (status: string): string => {
 // --- Data Fetching ---
 const fetchClaimDetails = async (orderId: number) => {
   try {
-    // Note: The API endpoint for claim details is now part of the main orders API
-    const response = await fetch(`/api/orders/${orderId}/claim-details`);
-    const result = await response.json();
+    const response = await axios.get(`/api/orders/${orderId}/claim-details`);
+    const result = response.data;
     if (result.success) {
       claimCode.value = result.data.claimCode;
       qrCodeData.value = result.data.qrCodeData;
@@ -65,20 +65,14 @@ const fetchClaimDetails = async (orderId: number) => {
 
 const fetchOrderDetails = async () => {
   isLoading.value = true;
-  const token = authStore.token;
-  if (!token) {
-    // showNotify({ type: "danger", message: "请先登录" });
+  if (!authStore.token) {
     router.push("/invalid-credential");
     return;
   }
 
   try {
-    const response = await fetch(`/api/orders/${props.id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    const result = await response.json();
+    const response = await axios.get(`/api/orders/${props.id}`);
+    const result = response.data;
     if (result.success) {
       if (result.data.status === "CLOSED") {
         showNotify({ type: "primary", message: "该订单已关闭" });
@@ -89,12 +83,10 @@ const fetchOrderDetails = async () => {
       order.value = result.data;
       statusText.value = `订单状态: ${formatStatus(order.value.status)}`;
 
-      // If order is already completed, fetch claim details immediately
       if (order.value.status === "COMPLETED") {
         await fetchClaimDetails(order.value.id);
       }
 
-      // Set up WebSocket listeners for real-time updates
       setupWebSocketListeners();
     } else {
       throw new Error("Failed to fetch order details");
@@ -118,7 +110,6 @@ const setupWebSocketListeners = () => {
     order.value = { ...order.value, ...updatedOrder };
     statusText.value = `订单状态已更新: ${formatStatus(updatedOrder.status)}`;
 
-    // Handle different statuses
     switch (updatedOrder.status) {
       case "COMPLETED":
         showNotify({ type: "success", message: "订单已完成！" });
@@ -139,7 +130,6 @@ const setupWebSocketListeners = () => {
     }
   });
 
-  // Connect and join the room if not already in a final state
   if (!["COMPLETED", "CANCELLED", "CLOSED"].includes(order.value?.status)) {
     socketService.connect();
     socketService.joinOrderRoom(orderId);

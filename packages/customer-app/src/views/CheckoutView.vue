@@ -4,6 +4,7 @@ import { useMerchantStore } from "@/stores/merchant";
 import { useRouter } from "vue-router";
 import { showNotify } from "vant";
 import type { SpecOption } from "@/stores/cart";
+import axios from 'axios';
 
 const cartStore = useCartStore();
 const merchantStore = useMerchantStore();
@@ -22,13 +23,6 @@ const submitOrder = async () => {
   if (!merchantStore.selectedMerchant) {
     showNotify({ type: "danger", message: "请先选择一个门店" });
     router.push("/store-selection");
-    return;
-  }
-
-  const token = localStorage.getItem("token");
-  if (!token) {
-    showNotify({ type: "danger", message: "凭证无效" });
-    router.push("/invalid-credential");
     return;
   }
 
@@ -51,28 +45,18 @@ const submitOrder = async () => {
   }
 
   try {
-    const response = await fetch("/api/orders", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // 添加Token到请求头
-      },
-      body: JSON.stringify({
-        // 后端会从Token中解析 merchantId 和 sessionId
-        items: orderItems,
-        storeName: merchantStore.selectedMerchant.name,
-        storeAddress: merchantStore.selectedMerchant.address,
-        tableId: 1, // 暂时硬编码桌号
-        merchantId: 1, // 暂时硬编码商户ID
-      }),
-    });
+    const payload = {
+      items: orderItems,
+      storeName: merchantStore.selectedMerchant.name,
+      storeAddress: merchantStore.selectedMerchant.address,
+      tableId: 1, // 暂时硬编码桌号
+      merchantId: 1, // 暂时硬编码商户ID
+    };
+    
+    const response = await axios.post("/api/orders", payload);
+    const result = response.data;
 
-    const result = await response.json();
     if (!result.success) {
-      // 如果是401等认证错误，后端可能会返回特定的错误信息
-      if (response.status === 401) {
-        throw new Error("认证失败");
-      }
       throw new Error(result.message || "Order submission failed");
     }
 
@@ -83,7 +67,8 @@ const submitOrder = async () => {
     router.push(`/order/${orderId}`);
   } catch (error: any) {
     console.error("Failed to submit order:", error);
-    showNotify({ type: "danger", message: error.message || "下单失败" });
+    const message = axios.isAxiosError(error) ? error.response?.data?.message : error.message;
+    showNotify({ type: "danger", message: message || "下单失败" });
   }
 };
 </script>

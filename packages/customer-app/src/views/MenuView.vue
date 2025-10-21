@@ -5,6 +5,7 @@ import { useMerchantStore } from "@/stores/merchant"; // Import the new store
 import type { MenuItem, SpecOption } from "@/types";
 import { useRouter } from "vue-router";
 import { showNotify } from "vant";
+import axios from 'axios';
 
 // --- Stores and Router ---
 const cartStore = useCartStore();
@@ -55,10 +56,9 @@ const fetchData = async () => {
 
   isLoading.value = true;
   try {
-    // 使用 Pinia store 中存储的动态商户ID
     const merchantId = 1;
-    const response = await fetch(`/api/merchants/${merchantId}/menu`);
-    const result = await response.json();
+    const response = await axios.get(`/api/merchants/${merchantId}/menu`);
+    const result = response.data;
 
     if (result.success) {
       categories.value = result.data;
@@ -67,8 +67,8 @@ const fetchData = async () => {
     }
   } catch (error: any) {
     console.error("加载菜单时出错:", error);
-    // 将后端的具体错误信息展示给用户，更利于调试
-    showNotify({ type: "danger", message: error.message || "菜单加载失败" });
+    const message = axios.isAxiosError(error) ? error.response?.data?.message : error.message;
+    showNotify({ type: "danger", message: message || "菜单加载失败" });
   } finally {
     isLoading.value = false;
   }
