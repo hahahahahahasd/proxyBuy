@@ -12,6 +12,10 @@ services:
       dockerfile: Dockerfile.nginx
     ports:
       - "3001:80"
+    volumes:
+      # --- 开发模式：将本地构建好的 public 文件夹直接映射给 Nginx ---
+      # 这样可以实现前端代码的实时更新，无需重建 Nginx 镜像。
+      - ./public:/usr/share/nginx/html
     depends_on:
       backend:
         condition: service_healthy # Nginx will wait for the backend to be healthy
@@ -66,7 +70,6 @@ services:
       - "3000:3000" # 将容器的 3000 端口映射到宿主机的 3000 端口
     volumes:
       - ./packages/backend/src:/usr/src/app/src
-      - ./public:/usr/src/app/public
     restart: unless-stopped
     networks:
       - app-network

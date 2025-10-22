@@ -10,6 +10,12 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  build: {
+    // 指定构建输出目录到项目根目录的 public 文件夹
+    // 这对于开发流程非常方便，可以直接将构建结果映射到容器中
+    outDir: '../../public',
+    emptyOutDir: true, // 构建时清空目标目录
+  },
   server: {
     proxy: {
       // 将所有 /socket.io 的请求代理到后端
