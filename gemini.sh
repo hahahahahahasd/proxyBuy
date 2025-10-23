@@ -3,7 +3,7 @@
 # --- 請在這裡填寫您所有的 API Keys ---
 # 每個 Key 用引號包起來，用空格隔開
 KEYS=(
-  "AIzaSyAYcB_T8kgkTjYpuE-w81U13Pf8lD5lplA"
+  "AIzaSyAtAfYDGN3YMQYj8ncRiSl0ntLEFpDZemM"
   "AIzaSyDPxZ2weHNMc2gYOHiZ9iZOjSqz2ZS3H_s"
   "AIzaSyAyQoAoZz8RABcZW5bAufmIX_MvWWCOXyM"
   "AIzaSyCnzW9Z_65y2RsbQrW_T9boa_91uO6Eea0"

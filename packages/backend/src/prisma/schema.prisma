@@ -72,7 +72,7 @@ model Order {
   merchantId   Int
   merchant     Merchant    @relation(fields: [merchantId], references: [id])
   items        OrderItem[]
-  sessionId    String? // 新增加 sessionId 字段
+  sessionId    String?     @unique // 新增加 sessionId 字段
   assigneeId   Int? // 领取订单的员工ID
   assigneeName String? // 领取订单的员工姓名
 

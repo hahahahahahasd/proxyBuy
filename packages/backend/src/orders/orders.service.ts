@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import {
   Injectable,
   NotFoundException,
@@ -78,7 +79,9 @@ export class OrdersService {
     const itemsCreate = items.map((item) => ({
       quantity: item.quantity,
       selectedSpecifications:
-        item.selectedSpecifications && typeof item.selectedSpecifications === 'object' && !Array.isArray(item.selectedSpecifications)
+        item.selectedSpecifications &&
+          typeof item.selectedSpecifications === 'object' &&
+          !Array.isArray(item.selectedSpecifications)
           ? item.selectedSpecifications
           : {},
       menuItem: {
@@ -104,20 +107,35 @@ export class OrdersService {
       data.sessionId = sessionId;
     }
 
-    const order = await this.prisma.order.create({
-      data,
-      include: {
-        items: {
-          include: {
-            menuItem: true,
+    try {
+      const order = await this.prisma.order.create({
+        data,
+        include: {
+          items: {
+            include: {
+              menuItem: true,
+            },
           },
         },
-      },
-    });
+      });
 
-    const formattedOrder = this._formatOrderResponse(order);
-    this.ordersGateway.sendNewOrderToMerchant(merchantId, formattedOrder);
-    return formattedOrder;
+      const formattedOrder = this._formatOrderResponse(order);
+      this.ordersGateway.sendNewOrderToMerchant(merchantId, formattedOrder);
+      return formattedOrder;
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        // 检查是否是 sessionId 的唯一性约束失败
+        const target = error.meta?.target as string[];
+        if (target && target.includes('sessionId')) {
+          throw new ConflictException('您已提交过订单，请勿重复下单。');
+        }
+      }
+      // 对于其他错误，或者 P2002 不是由 sessionId 引起的，则重新抛出
+      throw error;
+    }
   }
 
   async findActiveOrderBySession(merchantId: number, sessionId: string) {

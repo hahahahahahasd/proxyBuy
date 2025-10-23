@@ -8,6 +8,7 @@ import {
   UseGuards,
   Request,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateCustomerOrderDto } from './dto/create-customer-order.dto';
@@ -25,6 +26,12 @@ export class CustomerOrdersController {
   @ApiBearerAuth()
   async getActiveOrderForSession(@Request() req) {
     const { merchantId, sessionId } = req.user;
+
+    // 如果 token 中没有 sessionId，则不可能有活动订单
+    if (!sessionId) {
+      return { success: true, data: null };
+    }
+
     const order = await this.ordersService.findActiveOrderBySession(
       merchantId,
       sessionId,
@@ -57,6 +64,12 @@ export class CustomerOrdersController {
   @ApiBearerAuth()
   async findOne(@Request() req, @Param('id', ParseIntPipe) id: number) {
     const { sessionId } = req.user;
+
+    // 必须提供 sessionId 才能查询
+    if (!sessionId) {
+      throw new BadRequestException('无效的会话，无法查询订单。');
+    }
+
     const order = await this.ordersService.getOrderByIdForCustomer(
       id,
       sessionId,
