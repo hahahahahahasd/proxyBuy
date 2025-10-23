@@ -8,13 +8,16 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { CreateCustomerOrderDto } from './dto/create-customer-order.dto'; // 导入新的 DTO
 import { OrdersGateway } from './orders.gateway';
-import { OrderStatus, Order } from '@prisma/client';
+import { OrderStatus, Order, OrderItem, MenuItem } from '@prisma/client'; // 导入 OrderItem 和 MenuItem
 import { ClaimOrderDto } from './dto/claim-order.dto';
 import { SyncQrCodeDto } from './dto/sync-qr-code.dto';
 
 // 扩展Prisma生成的Order类型，以包含关联数据
+// 更新类型定义，使其能准确反映数据结构
 type OrderWithItems = Order & {
-  items: { menuItem: any }[];
+  items: (OrderItem & {
+    menuItem: MenuItem;
+  })[];
 };
 
 @Injectable()
@@ -33,8 +36,34 @@ export class OrdersService {
     if (!order) {
       return null;
     }
-    const { assigneeId, assigneeName, ...rest } = order;
-    const response: any = { ...rest };
+    // 显式地处理 items 数组，确保所有字段都被包含
+    const { assigneeId, assigneeName, items, ...rest } = order;
+
+    const formattedItems = items.map(item => {
+      const specsObject = item.selectedSpecifications as Record<string, any>;
+      // 将存储的对象格式转换回前端期望的数组格式
+      const specsArray = (specsObject && typeof specsObject === 'object')
+        ? Object.entries(specsObject).map(([name, option]) => ({ name, option }))
+        : []; // 如果不是有效对象，则返回空数组
+
+      return {
+        id: item.id,
+        quantity: item.quantity,
+        selectedSpecifications: specsArray, // 使用转换后的数组
+        menuItemId: item.menuItemId,
+        menuItem: {
+          id: item.menuItem.id,
+          name: item.menuItem.name,
+          price: item.menuItem.price,
+          imageUrl: item.menuItem.imageUrl,
+        },
+      };
+    });
+
+    const response: any = {
+      ...rest,
+      items: formattedItems, // 使用格式化后的 items 数组
+    };
 
     if (assigneeId !== null && assigneeName !== null) {
       response.assignee = {
@@ -75,19 +104,26 @@ export class OrdersService {
       return total + menuItem.price * item.quantity;
     }, 0);
 
-    // 规范化 items.create，确保 selectedSpecifications 为对象（非数组/非 null）
-    const itemsCreate = items.map((item) => ({
-      quantity: item.quantity,
-      selectedSpecifications:
-        item.selectedSpecifications &&
-          typeof item.selectedSpecifications === 'object' &&
-          !Array.isArray(item.selectedSpecifications)
-          ? item.selectedSpecifications
-          : {},
-      menuItem: {
-        connect: { id: item.menuItemId },
-      },
-    }));
+    // 规范化 items.create，并转换 selectedSpecifications 的数据结构
+    const itemsCreate = items.map((item) => {
+      // 将规格数组转换为对象
+      const specificationsObject = Array.isArray(item.selectedSpecifications)
+        ? item.selectedSpecifications.reduce((acc, spec) => {
+          if (spec && spec.name) {
+            acc[spec.name] = spec.option;
+          }
+          return acc;
+        }, {})
+        : {}; // 如果不是数组或不存在，则默认为空对象
+
+      return {
+        quantity: item.quantity,
+        selectedSpecifications: specificationsObject,
+        menuItem: {
+          connect: { id: item.menuItemId },
+        },
+      };
+    });
 
     // 构造 data 对象，条件性加入 sessionId，避免传入 undefined 导致 Prisma 报错
     const data: any = {
@@ -201,7 +237,7 @@ export class OrdersService {
   // --- 商户端方法 ---
 
   async getOrdersByMerchant(merchantId: number) {
-    const orders = await this.prisma.order.findMany({
+    const orders: OrderWithItems[] = await this.prisma.order.findMany({
       where: { merchantId },
       include: {
         items: {
