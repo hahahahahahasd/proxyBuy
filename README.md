@@ -1,6 +1,6 @@
 # 支付人-老板助手 SaaS 系统 MVP Demo
 
-这是一个基于 NestJS, Prisma, PostgreSQL 和 WebSocket 的轻量级点餐SaaS系统基础Demo。
+这是一个基于 NestJS, Prisma, PostgreSQL 和 WebSocket 的轻量级代下单SaaS系统基础Demo。
 
 ## 技术栈
 
@@ -65,3 +65,8 @@ docker-compose up --build
 - 页面会建立 WebSocket 连接。
 - 当顾客端完成支付后，新订单会实时推送到此页面，并伴有提示音。
 - 商户可以点击按钮更新订单状态，状态会实时同步。
+
+
+swag 
+
+http://localhost:3000/api/

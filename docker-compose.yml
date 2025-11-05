@@ -3,7 +3,7 @@ version: '3.8'
 networks:
   app-network:
     driver: bridge
-    name: saas_app_network # <--- 确保有这一行
+    name: proxy_buy_network # <--- 确保有这一行
 
 services:
   nginx:

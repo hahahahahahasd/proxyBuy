@@ -1,0 +1,16 @@
+services:
+  nginx:
+    networks:
+      - shared-infra-network # 覆盖网络设置
+    depends_on:
+      - backend
+
+  backend:
+    networks:
+      - shared-infra-network # 覆盖网络设置
+    # 覆盖主 compose 中对 postgres/redis 的依赖（不在此仓库启动这些服务）
+    depends_on: []
+
+networks:
+  shared-infra-network:
+    external: true # 声明使用外部网络
