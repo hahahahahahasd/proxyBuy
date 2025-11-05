@@ -9,10 +9,6 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // --- Global API Prefix ---
-  // This will prefix all API routes with /api (e.g., /api/orders, /api/merchants)
-  app.setGlobalPrefix('api');
-
   // --- Swagger API Documentation Setup ---
   const config = new DocumentBuilder()
     .setTitle('Payer Restaurant SaaS API')
@@ -22,7 +18,7 @@ async function bootstrap() {
     .addTag('merchants', 'Endpoints for managing merchants and menus')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document); // Swagger UI will be available at /docs
+  SwaggerModule.setup('api', app, document); // Swagger UI will be available at /api
 
   // --- WebSocket Redis Adapter ---
   const redisIoAdapter = new RedisIoAdapter(app);
@@ -41,6 +37,6 @@ async function bootstrap() {
   // --- Start Application ---
   await app.listen(3000);
   console.log(`Application is running on: http://localhost:3000`);
-  console.log(`Swagger API documentation is available at: http://localhost:3000/docs`);
+  console.log(`Swagger API documentation is available at: http://localhost:3000/api`);
 }
 bootstrap();
