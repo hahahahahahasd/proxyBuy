@@ -13,9 +13,6 @@ async function main() {
         create: [
           { name: '标准美式', price: 48.5, description: '浓郁的猪骨汤底' },
           { name: '加浓美式', price: 45, isAvailable: true },
-          { name: '日式炸鸡', price: 28, isAvailable: true },
-          { name: '朝日啤酒', price: 15, isAvailable: true },
-          { name: '可乐', price: 8, },
         ],
       },
     },
