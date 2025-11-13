@@ -1,58 +1,33 @@
-# --- STAGE 1: Base Dependencies ---
-# Install dependencies for the entire monorepo (workspaces)
-FROM node:20-bullseye AS base
+# 使用官方 Node.js 镜像
+FROM node:20
+
+# 设置工作目录
 WORKDIR /usr/src/app
-COPY package.json package-lock.json ./
-# Copy package.json for both frontend and backend to ensure workspaces are detected
-COPY packages/backend/package.json ./packages/backend/
-COPY packages/customer-app/package.json ./packages/customer-app/
-RUN npm install --legacy-peer-deps
 
-# --- STAGE 2: Frontend Builder ---
-# Build the customer-app (Vue frontend)
-FROM base AS frontend-builder
+# 先复制 package 文件以利用 Docker 缓存
+COPY package*.json ./
+COPY packages/backend/package*.json ./packages/backend/
+COPY packages/customer-app/package*.json ./packages/customer-app/
+
+# 安装依赖
+RUN npm install
+
+# 复制项目其它文件
+COPY . .
+
+# 生成 Prisma 客户端（若使用 Prisma）
+RUN npx prisma generate --schema=./packages/backend/src/prisma/schema.prisma
+
+# 构建后端
+WORKDIR /usr/src/app/packages/backend
+RUN npm run build
 WORKDIR /usr/src/app
-# Copy frontend source code
-COPY packages/customer-app ./packages/customer-app
-# Build the frontend app
-RUN npm run build -w packages/customer-app
 
-# --- STAGE 3: Backend Builder ---
-# Build the NestJS backend
-FROM base AS backend-builder
-WORKDIR /usr/src/app
-# Copy backend source code and prisma schema
-COPY packages/backend ./packages/backend
-COPY packages/backend/src/prisma ./prisma
-# Generate Prisma client
-RUN npx prisma generate
-# Build the backend app
-RUN npm run build -w packages/backend
+# 复制 public 目录到后端应用中
+RUN cp -r public packages/backend/public
 
-# --- STAGE 4: Production ---
-# This is the final, lean image that will be run
-FROM node:20-bullseye AS production
-WORKDIR /usr/src/app
-# Copy production dependencies from the base stage
-COPY --from=base /usr/src/app/package.json /usr/src/app/package-lock.json ./
-COPY --from=base /usr/src/app/packages/backend/package.json ./packages/backend/
-COPY --from=base /usr/src/app/node_modules ./node_modules
-# Copy the compiled backend code from the backend-builder stage
-COPY --from=backend-builder /usr/src/app/packages/backend/dist ./dist
-# The prisma schema file is needed at runtime
-COPY --from=backend-builder /usr/src/app/prisma ./prisma
-# Copy the built frontend assets from the frontend-builder stage into the public directory
-COPY --from=frontend-builder /usr/src/app/packages/customer-app/dist ./public
-# Copy entrypoint and wait-for-it scripts
-COPY ./entrypoint.sh ./
-COPY ./wait-for-it.sh ./
-# Grant execution permissions
-RUN chmod +x ./entrypoint.sh ./wait-for-it.sh
-
-# Install PM2 process manager globally
-RUN npm install pm2 -g
-
+# 暴露运行端口
 EXPOSE 3000
 
-# Set the entrypoint script to be executed when the container starts
-ENTRYPOINT ["./entrypoint.sh"]
+# 容器启动命令（启动已构建的后端）
+CMD ["node", "packages/backend/dist/main"]
