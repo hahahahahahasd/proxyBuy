@@ -49,7 +49,7 @@ export class AuthService {
         merchantId,
         sessionId,
         status: {
-          in: [OrderStatus.RECEIVED, OrderStatus.PREPARING],
+          in: [OrderStatus.RECEIVED, OrderStatus.PREPARING, OrderStatus.COMPLETED],
         },
       },
       orderBy: {
