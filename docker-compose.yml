@@ -11,7 +11,7 @@ services:
       context: .
       dockerfile: Dockerfile.nginx
     ports:
-      - "3001:80"
+      - "80:80"
     depends_on:
       backend:
         condition: service_healthy # Nginx will wait for the backend to be healthy
